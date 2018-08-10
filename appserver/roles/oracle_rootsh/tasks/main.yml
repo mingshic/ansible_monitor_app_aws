@@ -1,0 +1,4 @@
+
+- name: sh orainstRoot.sh and root.sh
+  shell: sh /{{ oracle_base_begin }}/app/oracle/inventory/orainstRoot.sh && sh /{{ oracle_base_begin }}/app/oracle/product/{{ oracle_version }}/{{ oracle_db_number }}/root.sh 
+

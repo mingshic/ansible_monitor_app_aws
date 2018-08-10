@@ -1,0 +1,13 @@
+---
+
+- hosts: all
+  user: root
+#  vars:
+#    zabbix_version: "zabbix-3.2.1"
+#    zabbix_prefix: "/usr/local/zabbix"
+#    zabbix_conf: "/etc/zabbix"
+#    zabbix_sbin: "/etc/init.d"
+#    zabbix_log: "/var/zabbix"
+#    zabbix_log_file: "/var/zabbix/zabbix_server.log"
+  roles:
+    - zabbix-server

@@ -1,0 +1,57 @@
+#[php]
+files: [
+        { src: "CentOS-Base.repo", dest: "/etc/yum.repos.d/CentOS-Base.repo", mode: "0644", owner: "root", group: "root", class: "nginx" },
+]
+
+php_rpm_dependent: [
+        { name: "epel-release", state: "present" },
+        { name: "gcc", state: "present" },
+        { name: "php-common", state: "absent" },
+        { name: "php-xml", state: "absent" },
+        { name: "php-gd", state: "absent" },
+        { name: "php-bcmath", state: "absent" },
+        { name: "php-pear", state: "absent" },
+        { name: "php-xmlrpc", state: "absent" },
+        { name: "php-mbstring", state: "absent" },
+        { name: "php-pdo", state: "absent" },
+        { name: "php-process", state: "absent" },
+        { name: "php-cli", state: "absent" },
+        { name: "php-ldap", state: "absent" },
+        { name: "gd-devel", state: "absent" },
+        { name: "libjpeg-devel", state: "absent" },
+        { name: "libpng-devel", state: "absent" },
+        { name: "libxml2-devel", state: "absent" },
+        { name: "bzip2-devel", state: "absent" },
+        { name: "libcurl-devel", state: "absent" },
+        { name: "php-mcrypt", state: "absent" },
+        { name: "php-common", state: "present" },
+        { name: "php-xml", state: "present" },
+        { name: "php-gd", state: "present" },
+        { name: "php-bcmath", state: "present" },
+        { name: "php-pear", state: "present" },
+        { name: "php-xmlrpc", state: "present" },
+        { name: "php-mbstring", state: "present" },
+        { name: "php-pdo", state: "present" },
+        { name: "php-process", state: "present" },
+        { name: "php-cli", state: "present" },
+        { name: "php-ldap", state: "present" },
+        { name: "make", state: "present" }, 
+        { name: "gd-devel", state: "present" },
+        { name: "libjpeg-devel", state: "present" },
+        { name: "libpng-devel", state: "present" },
+        { name: "libxml2-devel", state: "present" },
+        { name: "bzip2-devel", state: "present" },
+        { name: "libcurl-devel", state: "present" },
+        { name: "php-mcrypt", state: "present" },
+]
+
+php_rpm_install: [
+        { name: "php-mysql", state: "present" },
+        { name: "php", state: "present" },
+        { name: "php-fpm", state: "present" },
+]        
+
+
+
+
+

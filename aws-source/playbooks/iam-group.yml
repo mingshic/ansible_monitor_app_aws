@@ -1,0 +1,10 @@
+---
+
+- hosts: all
+  user: root
+  vars:
+    group_name: "devops"
+    group_policy_name: "ec2-s3-dynamoDB"
+    policy_json: "user_policy.json"
+  roles:
+    - iam_group

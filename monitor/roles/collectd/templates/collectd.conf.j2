@@ -1,0 +1,59 @@
+#
+# Config file for collectd(1).
+# Please read collectd.conf(5) for a list of options.
+# http://collectd.org/
+#
+
+##############################################################################
+# Global                                                                     #
+#----------------------------------------------------------------------------#
+# Global settings for the daemon.                                            #
+##############################################################################
+
+Hostname    "{{ collectd_hostname }}"
+FQDNLookup   true
+BaseDir     "/var/lib/collectd"
+PIDFile     "/var/run/collectd.pid"
+PluginDir   "/usr/lib64/collectd"
+TypesDB     "/usr/share/collectd/types.db"
+
+Interval     5
+Timeout         4
+
+
+LoadPlugin  syslog
+LoadPlugin  interface
+LoadPlugin  load
+LoadPlugin  network
+LoadPlugin cpu
+LoadPlugin disk
+LoadPlugin statsd
+<Plugin syslog>
+    LogLevel error
+</Plugin>
+<Plugin interface>
+Interface "{{ collectd_eth }}"
+IgnoreSelected false
+</Plugin>
+<Plugin load>
+    ReportRelative true
+</Plugin>
+<Plugin network>
+    Server "{{ server_hostname }}" "25826"
+</Plugin>
+<Plugin cpu>
+  ReportByCpu true
+  ReportByState true
+  ValuesPercentage false
+</Plugin>
+<Plugin disk>
+       Disk "/^[hs]d[a-f][0-9]?$/"
+       IgnoreSelected false
+       UseBSDName false
+      # UdevNameAttr "DEVNAME"
+</Plugin>
+<Plugin statsd>
+  Host "127.0.0.1"
+  Port "8125"
+  DeleteSets     true
+</Plugin>

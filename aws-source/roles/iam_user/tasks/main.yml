@@ -1,0 +1,138 @@
+---
+
+
+- name: Create groups
+  iam:
+    iam_type: group
+    name: "{{ item.value.group_name }}"
+    state: present
+  register: created_group
+  with_dict: "{{ group_and_policy }}"
+  tags: 
+    - create-group  
+    - create-group-policy
+    - user-to-group
+    - user-policy-to-group
+
+- name: give policy to group that have been recently created
+  iam_policy:
+    iam_type: group
+    iam_name: "{{ item.value.group_name }}"
+    policy_name: "{{ item.value.policy | regex_replace('.json', '') }}"
+    policy_json: "{{ lookup( 'file', '{{ item.value.policy }}' ) }}"
+    state: present
+  with_dict: "{{ group_and_policy }}"
+  tags:
+    - create-group
+    - create-group-policy
+    - user-to-group
+    - user-policy-to-group
+
+
+- name: Create new IAM users with API keys
+  iam:
+    iam_type: user
+    name: "{{ item.value.user_name }}"
+    state: present
+    password: "{{ item.value.password }}"
+    access_key_state: create
+  with_dict: "{{ user_and_policy }}"
+  register: userinfo
+  tags:
+    - create-user 
+    - user-to-group
+    - user-policy-to-group
+
+- name: Create a policy for created user 
+  iam_policy:
+    iam_type: user
+    iam_name: "{{ item.value.user_name }}"
+    policy_name: "{{ item.value.policy | regex_replace('.json', '') }}"
+    policy_json: " {{ lookup( 'file', '{{ item.value.policy }}') }} "
+    state: present
+  with_dict: "{{ user_and_policy }}"
+  tags:
+    - create-user
+    - user-policy-to-group
+    
+
+- set_fact:
+    groupss: "{{ created_group.results }}"
+
+- set_fact:
+    userss: "{{ userinfo.results }}"
+
+- name: new users append to groups
+  iam:
+    iam_type: user
+    name: "{{ item[0] }}"
+    state: update
+    groups: "{{ item[1] }}" 
+  with_nested:
+    - [ "{{ userinfo.results[0].item.value.user_name }}" ]
+    - [ "{{ created_group.results[0].item.value.group_name }}" ]
+  tags:
+    - user-to-group
+    - user-policy-to-group
+
+- name: create aws_user_authentication_file
+  file:
+    path=~/aws_user_authentication_file state=touch
+  tags:
+    - create-user
+    - user-to-group
+    - user-policy-to-group
+
+- name: gain key and secret on response to user_info.json 
+  lineinfile: 
+    dest: "{{ authentication_file }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { line: "export AWS_ACCESS_KEY_ID='{{ userinfo.results[0].user_meta.access_keys[0].access_key_id }}'" }
+    - { line: "export AWS_SECRET_ACCESS_KEY='{{ userinfo.results[0].user_meta.access_keys[0].secret_access_key }}'" }
+    - { line: "export AWS_REGION='{{ region }}'" } 
+  tags:
+    - create-user
+    - user-to-group
+    - user-policy-to-group
+
+
+- name: send mail to user
+  mail:
+    host: localhost
+    port: 25
+    subject: "title-testing"
+    body: 'aws-user has been successfully.'
+    from: root@msc.com
+    to: 13667636243@163.com
+    attach: "{{ authentication_file }}"
+    charset: utf8
+  delegate_to: localhost
+  tags:
+    - create-user
+    - user-to-group
+    - user-policy-to-group
+
+
+- name: send mail to user
+  mail:
+    host: localhost
+    port: 25
+    subject: "title"
+    body: 'aws-group has been successfully.'
+    from: root@msc.com
+    to: 13667636243@163.com
+#    attach: "{{ authentication_file }}"
+    charset: utf8
+  delegate_to: localhost
+  tags:
+    - create-group
+    - create-group-policy
+
+#- name: Create iam_role
+#  iam_role:
+#    name: msc1
+#    assume_role_policy_document: "{{ lookup('file','policy.json')}}"
+#    state: present
+#   
+ 

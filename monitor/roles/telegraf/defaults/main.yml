@@ -1,0 +1,11 @@
+#[telegraf]
+files: [
+        { src: "CentOS-Base.repo", dest: "/etc/yum.repos.d/CentOS-Base.repo", mode: "0644", owner: "root", group: "root", class: "telegraf" },
+        { src: "influxdb.repo", dest: "/etc/yum.repos.d/influxdb.repo", mode: "0644", owner: "root", group: "root", class: "telegraf" },
+]
+
+
+telegraf_rpm_install: [
+        { name: "epel-release", state: "present" },
+        { name: "telegraf", state: "present" }
+]        

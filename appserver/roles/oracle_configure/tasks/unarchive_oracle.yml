@@ -1,0 +1,23 @@
+---
+
+- name: get linux.oracle and data on s3 by get_for module
+  get_url:
+    dest: "/tmp/"
+    url: "https://s3.amazonaws.com/{{ get_bukect_rui }}{{ item.get_package }}"  
+  with_items: "{{ get_package_uri }}"
+  register: package
+
+- set_fact:
+    rep: "{{ package.results }}"
+
+- name: unzip oracle package
+  unarchive:
+    src: "/tmp/{{ item.item.get_package }}"
+    dest: /{{ oracle_base_begin }}
+  with_items: "{{ package.results }}" 
+    
+#- name: "unzip {{  }}" 
+#  unarchive:
+#    src: linux.x64_11gR2_database_2of2.zip 
+#    dest: /{{ oracle_base_begin }}
+     

@@ -1,0 +1,8 @@
+---
+
+- hosts: all
+  user: root
+  vars:
+    region: "us-east-1"
+  roles:
+    - ec2_eip

@@ -1,0 +1,13 @@
+
+
+- name: package type to set variables
+  set_fact:
+    zabbix_version_way_to_judge1: "{{ zabbix_version_way | regex_replace('^zabbix-?.*t', '') }}"
+    zabbix_version_way_to_judge2: "{{ zabbix_version_way | regex_replace('^zabbix-?.*p', '') }}"
+    zabbix_version_way_to_dir: "{{ zabbix_version_way | regex_replace('.tar(.gz)?', '') }}"
+
+
+
+- include: "RedHat.yml"
+
+

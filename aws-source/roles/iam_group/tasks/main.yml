@@ -1,0 +1,17 @@
+---
+
+- name: Create Groups follow to required of you
+  iam:
+    iam_type: group
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ group_name }}"
+
+- name: give policy to group that have been recently created
+  iam_policy:
+    iam_type: group
+    iam_name: "{{ item }}"
+    policy_name: "{{ group_policy_name }}" 
+    policy_json: "{{ lookup( 'file', '{{ policy_json }}' ) }}"
+    state: present
+  with_items: "{{ group_name }}"

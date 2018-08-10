@@ -1,0 +1,74 @@
+
+- name: php file
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+  with_items: "{{ files }}"
+  when: ansible_distribution_major_version == "7"
+
+- name: Install dependent php
+  yum:
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+  with_items: "{{ php_rpm_dependent }}" 
+  when: ansible_os_family == "RedHat"
+
+- name: create {{ project_php }} directory
+  file: dest=/tmp/{{ project_php }} state=directory
+  when: (php_version_way_to_judge1 == "ar.gz") or (php_version_way_to_judge1 == "ar") or (php_version_way_to_judge2 == "m")
+
+- name: template transfer php dir
+  copy: src={{ php_version_way }} dest=/tmp/{{ project_php }}/{{ php_version_way }}
+  when: (php_version_way_to_judge1 == "ar.gz") or (php_version_way_to_judge1 == "ar") or (php_version_way_to_judge2 == "m")
+
+- name: unarchive php
+  unarchive:
+    src: /tmp/{{ project_php }}/{{ php_version_way }}
+    dest: /tmp/{{ project_php }}
+    remote_src: True
+  when: (php_version_way_to_judge1 == "ar.gz") or (php_version_way_to_judge1 == "ar")
+
+- name: Install php
+  yum:
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+  with_items: "{{ php_rpm_install }}"
+  when: (php_version_way_to_judge1 != "ar.gz") and (php_version_way_to_judge1 != "ar") and (php_version_way_to_judge2 != "m")
+
+- name: install php
+  shell: source /etc/profile && cd /tmp/{{ project_php }}/{{ php_version_way_to_dir }} && ./configure --prefix={{ php_prefix }} --sbindir={{ php_sbin }} --localstatedir={{ php_var }} --sysconfdir={{ php_conf }} --with-config-file-path={{ php_conf }} --with-bz2 --with-curl --enable-ftp --enable-sockets --disable-ipv6 --with-gd --with-jpeg-dir=/usr/local --with-png-dir=/usr/local --with-freetype-dir=/usr/local --enable-gd-native-ttf --with-iconv-dir=/usr/local --enable-mbstring --enable-calendar --with-gettext --with-libxml-dir=/usr/local --with-zlib --with-pdo-mysql=mysqlnd --with-mysqli=mysqlnd --with-mysql=mysqlnd --enable-dom --enable-xml --enable-fpm --with-libdir=lib64 --enable-bcmath && make && make install    
+  when: (php_version_way_to_judge1 == "ar.gz") or (php_version_way_to_judge1 == "ar")
+
+- name: configure file php.ini tar
+  template: src=php.j2 dest={{ php_conf }}/php.ini
+  when: (php_version_way_to_judge1 == "ar.gz") or (php_version_way_to_judge1 == "ar")
+
+- name: configure file php-fpm tar
+  template: src=php-fpm.conf.j2 dest={{ php_conf }}/php-fpm.conf  
+  when: (php_version_way_to_judge1 == "ar.gz") or (php_version_way_to_judge1 == "ar")
+
+- name: configure file php.ini rpm
+  template: src=php.rpm.j2 dest=/etc/php.ini
+  when: (php_version_way_to_judge1 != "ar.gz") and (php_version_way_to_judge1 != "ar") or (php_version_way_to_judge2 == "m")
+
+- name: configure file php-fpm rpm and start php
+  template: src=php-fpm.conf.j2 dest=/etc/php-fpm.conf
+  when: (php_version_way_to_judge1 != "ar.gz") and (php_version_way_to_judge1 != "ar") or (php_version_way_to_judge2 == "m")
+
+- name: start php
+  service: name=php-fpm state=started
+  when: (php_version_way_to_judge1 != "ar.gz") and (php_version_way_to_judge1 != "ar") or (php_version_way_to_judge2 == "m")
+
+
+- name: php-fpmd tansfer remote host tar 
+  template: src=php-fpmd.j2 dest=/etc/init.d/php-fpmd mode=755 owner=root group=root
+  when: (php_version_way_to_judge1 == "ar.gz") or (php_version_way_to_judge1 == "ar")
+ 
+- name: php-fpmd chkconfig
+  shell: chkconfig --add php-fpmd
+  when: (php_version_way_to_judge1 == "ar.gz") or (php_version_way_to_judge1 == "ar")
+  notify: start phpd
+

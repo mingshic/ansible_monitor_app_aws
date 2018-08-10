@@ -1,0 +1,81 @@
+---
+
+- name: vpc net
+  ec2_vpc_net:
+    ec2_access_key: '{{ ec2_access_key }}'
+    ec2_secret_key: '{{ ec2_secret_key }}'
+    name: "{{ vpc_name }}"
+    cidr_block: "{{ cidr_block }}"
+    region: "{{ region }}"
+    tags:
+#      this: works
+      description:
+        - the application tier
+#    tenancy: dedicated
+  register: vpc
+  tags:
+    - create_vpc
+
+- set_fact: vpc_id={{ vpc.vpc.id }}
+  tags:
+    - create_vpc 
+
+- name: create internet igw for vpc net
+  ec2_vpc_igw:
+    region: "{{ region }}"
+    ec2_access_key: '{{ ec2_access_key }}'
+    ec2_secret_key: '{{ ec2_secret_key }}'
+    vpc_id: "{{ vpc_id }}"
+    state: present
+  register: igw
+  tags:
+    - create_igw
+
+- name: vpc net split sub to subnet
+  ec2_vpc_subnet:
+    state: "present"
+    ec2_access_key: '{{ ec2_access_key }}'
+    ec2_secret_key: '{{ ec2_secret_key }}'
+    vpc_id: "{{ vpc_id }}"
+    cidr: "{{ item.subnets_cidr }}"
+    region: "{{ region }}"
+    az: "{{ item.subnets_az }}" 
+    resource_tags: "{{ item.resource_tags_subnets }}"
+  register: vpc_subnets
+  with_items: 
+    - "{{ vpc_subnets }}"
+  tags:
+    - create_subnet
+
+- name: subnets to igw
+  ec2_vpc_route_table:
+    ec2_access_key: '{{ ec2_access_key }}'
+    ec2_secret_key: '{{ ec2_secret_key }}'
+    vpc_id: "{{ vpc_id }}"
+    region: "{{ region }}"
+    tags:
+      Name: "{{ item.subnet.tags.Name }}"
+    subnets:
+      - "{{ item.subnet.id }}" 
+      - "{{ item.subnet.tags.Name }}" 
+      - "{{ item.subnet.cidr_block }}"   
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ igw.gateway_id }}"
+  with_items: "{{ vpc_subnets.results }}"
+  tags:
+    - create_subnet
+
+- name: security group set
+  ec2_group:
+    name: "{{ security_group_name }}"
+    description: an web for test
+    ec2_access_key: '{{ ec2_access_key }}'
+    ec2_secret_key: '{{ ec2_secret_key }}'
+    vpc_id: "{{ vpc_id }}"
+    rules: "{{ rules }}"
+    region: "{{ region }}"
+  tags:
+    - create_vpc
+    - ec2_group
+

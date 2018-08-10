@@ -1,0 +1,73 @@
+#!/bin/bash
+#nx Startup script for the zabbix HTTP Server
+# chkconfig: - 85 15
+# processname: zabbix
+
+zabbixd={{ zabbix_sbin }}/zabbix_server
+zabbix_config={{ zabbix_conf }}/zabbix_server.conf
+# Start zabbix daemons functions.
+start() {
+zabbix_ps=`ps auxww | grep zabbix | grep server`
+if [[ $zabbix_ps =~ "zabbix_server" ]];then
+    echo "zabbix already running...."
+    exit 1
+else
+    source /etc/profile
+    $zabbixd
+    echo "zabbix is started"
+fi
+}
+
+# Stop zabbix daemons functions.
+
+stop() {
+zabbix_ps=`ps auxww | grep zabbix | grep server`
+zabbix_pid_num=`ps -ef | grep zabbix | grep server | awk -F ' ' '{print $3}' |sort |uniq |sed '1d'`
+if [[ $zabbix_ps =~ "server" ]];then
+    kill $zabbix_pid_num
+    sleep 1
+    echo "zabbix is stoped" 
+else
+    echo "zabbix is stop in the past"
+fi
+}
+
+# See how we were called.
+
+case "$1" in
+
+start)
+
+        start
+
+        ;;
+
+stop)
+
+        stop
+
+        ;;
+
+
+restart)
+
+        stop
+
+        start
+
+        ;;
+
+status)
+
+        status
+
+        ;;
+
+*)
+
+        echo $"Usage: $prog {start|stop|restart|reload|status|help}"
+
+        exit 1
+
+esac
+

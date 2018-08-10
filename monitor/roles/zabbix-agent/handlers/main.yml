@@ -1,0 +1,20 @@
+
+- name: start_zabbixd
+  shell: service zabbixd start
+  when: ansible_os_family == "RedHat"
+
+- name: restart_zabbixd
+  shell: service zabbixd restart
+  when: ansible_os_family == "RedHat"
+
+- name: start_zabbix_agent
+  service: name=zabbix-agent state=started
+  when: ansible_os_family == "RedHat"
+
+- name: restart_zabbix_agent
+  service: name=zabbix-agent state=restarted
+  when: ansible_os_family == "RedHat"
+
+- name: service zabbix_agent start
+  shell: service zabbix-agent start
+  when: ansible_os_family == "RedHat"

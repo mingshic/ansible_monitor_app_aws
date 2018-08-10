@@ -1,0 +1,3 @@
+
+- name: start netca
+  shell: /{{ oracle_base_begin }}/app/oracle/product/{{ oracle_version }}/{{ oracle_db_number }}/bin/netca /silent /responsefile /{{ oracle_base_begin }}/etc/netca.rsp

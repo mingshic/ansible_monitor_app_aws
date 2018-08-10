@@ -1,0 +1,80 @@
+# For advice on how to change settings please see
+# http://dev.mysql.com/doc/refman/5.6/en/server-configuration-defaults.html
+[client]
+port = {{ mysql_client_port }}
+socket = {{ mysql_client_socket }}
+
+[mysqld]
+user = mysql
+socket = {{ mysql_mysqld_socket }}
+pid-file = {{ mysql_pid }}
+port = {{ mysql_mysqld_port }}
+key_buffer_size = {{ mysql_key_buffer_size }}
+max_allowed_packet = {{ mysql_allowed_packet }}
+datadir = {{ mysql_data }}
+
+slave-net-timeout = {{ mysql_slave_net_timeout }}
+
+skip-external-locking
+skip-name-resolve
+#skip-grant-tables
+character_set_server = {{ mysql_character_set_server }}
+key_buffer_size = {{ mysql_key_buffer_size }}
+max_allowed_packet = {{ mysql_max_allowed_packet }}
+table_open_cache = {{ mysql_table_open_cache }}
+net_buffer_length = {{ mysql_net_buffer_length }}
+sort_buffer_size = {{ mysql_sort_buffer_size }}
+read_buffer_size = {{ mysql_read_buffer_size }}
+read_rnd_buffer_size = {{ mysql_read_rnd_buffer_size }}
+myisam_sort_buffer_size = {{ mysql_myisam_sort_buffer_size }}
+
+thread_cache_size = {{ mysql_thread_cache_size }}
+query_cache_size= {{ mysql_query_size }}
+thread_concurrency = {{ mysql_thread_concurrency }}
+completion_type = {{ mysql_completion_type }}
+wait_timeout = {{ mysql_wait_timeout }}
+interactive_timeout = {{ mysql_interactive_timeout }}
+
+log-bin = {{ mysql_bin_log }}
+log-bin-index = {{ mysql_bin_log_index }}
+sync_binlog = {{ mysql_sync_binlog }}
+binlog_format = {{ mysql_binlog_format }}
+server-id = {{ mysql_server_id }}
+relay-log = {{ mysql_relay_log }}
+relay-log-index = {{ mysql_relay_log_index }}
+
+
+innodb_data_home_dir = {{ mysql_innodb_data_home_dir }}
+innodb_log_buffer_size = {{ mysql_innodb_log_buffer_size }}
+innodb_buffer_pool_size = {{ mysql_innodb_buffer_pool_size }}
+innodb_additional_mem_pool_size = {{ mysql_innodb_additional_mem_pool_size }}
+innodb_log_file_size = {{ mysql_innodb_log_file_size }}
+innodb_flush_log_at_trx_commit = {{ mysql_innodb_flush_log_at_trx_commit }}
+innodb_lock_wait_timeout = {{ mysql_innodb_lock_wait_timeout }}
+innodb_flush_method = {{ mysql_innodb_flush_method }}
+open_files_limit = {{ mysql_open_files_limit }}
+max_connections = {{ mysql_max_connections }}
+innodb_file_per_table = {{ mysql_innodb_file_per_table }}
+expire_logs_days = {{ mysql_expire_logs_days }}
+log_queries_not_using_indexes = {{ mysql_log_queries_not_using_indexes }}
+long_query_time = {{ mysql_long_query_time }}
+slow_query_log = {{ mysql_query_log }}
+log-error = {{ mysql_error_log }}
+slow-query-log-file = {{ mysql_slow_log }}
+
+relay_log_purge = {{ mysql_relay_log_purge }}
+
+[mysqldump]
+quick
+max_allowed_packet = {{ mysql_allowed_packet }}
+[mysql]
+no-auto-rehash
+[myisamchk]
+key_buffer_size = {{ mysql_myisamchk_key_buffer_size }}
+sort_buffer_size = {{ mysql_myisamchk_sort_buffer_size }}
+read_buffer = {{ mysql_read_buffer }}
+write_buffer = {{ mysql_write_buffer }}
+[mysqlhotcopy]
+interactive-timeout
+
+

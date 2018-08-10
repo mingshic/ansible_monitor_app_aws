@@ -1,0 +1,12 @@
+
+- name: start phpd
+  shell: service php-fpmd start
+  when: ansible_os_family == "RedHat"
+
+- name: restart phpd
+  shell: service php-fpmd restart
+  when: ansible_os_family == "RedHat"
+
+- name: restart php
+  service: name=php-fpm state=restarted
+  when: ansible_os_family == "RedHat"

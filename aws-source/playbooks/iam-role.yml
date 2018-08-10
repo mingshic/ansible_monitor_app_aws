@@ -1,0 +1,14 @@
+---
+
+- hosts: all
+  user: root
+  vars:
+    principal_service: 'ec2.amazonaws.com'
+ #   principal_service: 'vmie.amazonaws.com'
+ #   principal_service: 'firehose.amazonaws.com'
+    role_and_policy:
+      role1:
+        role_name: 'ec2-1'
+        policy: 'ec2-1.json' 
+  roles:
+    - iam_role

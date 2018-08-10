@@ -1,0 +1,9 @@
+grafana_Version: "grafana-4.3.1-1.x86_64.rpm"
+install_url: https://s3-us-west-2.amazonaws.com/grafana-releases/release/{{ grafana_Version }}
+
+grafana_packages:
+  - initscripts
+  - fontconfig
+  - freetype*
+  - urw-fonts
+

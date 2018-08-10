@@ -1,0 +1,11 @@
+---
+
+- hosts: all
+  user: root
+  vars:
+    zabbix_server_url: "http://172.18.201.51:88/zabbix/api_jsonrpc.php"
+    zabbix_authori_user: "Admin"
+    zabbix_authori_password: "zabbix" 
+    zabbix_template_src: {"Templat check port.xml", "Template Nginx Status.xml", "Template CPU BASE.xml", "Template PROCESS OS BASE.xml", "Template DISKIO BASE.xml", "Template REDIS Cache.xml", "Template FILESYSTEMS BASE.xml", "Template Redis.xml", "Template LOG BASE.xml", "Template TCPSTATE PORT 5222.xml", "Template  MEMORY BASE.xml", "Template TCP state.xml", "Template NETWORK 50Mbps- ETH1.xml", "Template ZABBIXAGENT BASE.xml", "Template NETWORK BASE.xml", "zbx_export_templates_DCITS.xml"}
+  roles:
+    - zabbix-template-import

@@ -1,0 +1,37 @@
+---
+
+- name: Create the VPC
+  ec2_vpc:
+    state: present
+    ec2_access_key: 'AKIAJ4XNWAWSRIFOLUTA'
+    ec2_secret_key: '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'
+    dns_support: true
+    dns_hostnames: true
+    resource_tags: { Name: 'ansible', env: production }
+    cidr_block: 10.1.0.0/16
+    subnets: 
+      - cidr: 10.1.1.0/24
+        az: us-east-1a
+        resource_tags: { Name: 'ansible' }
+    internet_gateway: true
+    route_tables: 
+      - resource_tags: { Name: 'ansible' }
+      - subnets: 
+        - 10.1.1.0/24
+        routes:
+        - dest: 0.0.0.0/0
+          gw: igw
+    region: 'us-east-1'
+  register: vpc
+  tags:
+    - create_vpc
+
+- name: delete VPC
+  ec2_vpc:
+    state: absent
+    vpc_id: vpc-aaaaaa
+    region: us-east-1
+  tags:
+    - delete_vpc
+
+

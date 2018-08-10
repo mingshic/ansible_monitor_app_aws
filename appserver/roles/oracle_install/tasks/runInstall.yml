@@ -1,0 +1,3 @@
+
+- name: runInstaller oracle
+  shell: cd /{{ oracle_base_begin }}/database && ./runInstaller -silent -ignorePrereq -responseFile /{{ oracle_base_begin }}/etc/db_install.rsp && sleep 400

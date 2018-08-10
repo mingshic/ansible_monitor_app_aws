@@ -1,0 +1,35 @@
+#[zabbix]
+files: [
+        { src: "CentOS-Base.repo", dest: "/etc/yum.repos.d/CentOS-Base.repo", mode: "0644", owner: "root", group: "root", class: "zabbix" },
+        { src: "zabbix.repo", dest: "/etc/yum.repos.d/zabbix.repo", mode: "0644", owner: "root", group: "root", class: "zabbix" },
+]
+
+zabbix_rpm_dependent: [
+        { name: "epel-release", state: "present" },
+        { name: "gcc", state: "present" },
+        { name: "net-snmp-devel", state: "present" },
+        { name: "libxml2-devel", state: "present" },
+        { name: "libcurl-devel", state: "present" },
+]        
+
+zabbix_url_repo: [
+        { url: "http://mirrors.aliyun.com/repo/Centos-7.repo", dest: "/etc/yum.repos.d/Centos-7.repo", mode: "0644" },
+        { url: "http://mirrors.aliyun.com/repo/epel-7.repo", dest: "/etc/yum.repos.d/epel-7.repo", mode: "0644" },
+]
+
+zabbix_rpm_install: [
+        { name: "httpd", state: "absent" },
+        { name: "zabbix-server-mysql", state: "present" },
+        { name: "zabbix-web-mysql", state: "present" },
+        { name: "zabbix-web-mysql", state: "present" },  
+        { name: "dejavu-fonts-common", state: "present" }, 
+        { name: "dejavu-sans-fonts", state: "present" }, 
+        { name: "php-mysql", state: "present" },
+        { name: "zabbix-web", state: "present" },
+        { name: "httpd", state: "present" },
+]
+
+
+
+
+

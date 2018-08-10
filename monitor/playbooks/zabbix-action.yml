@@ -1,0 +1,17 @@
+---
+
+- hosts: all
+  user: root
+  vars:
+    server: 'http://172.18.201.51:88/zabbix'
+    user: 'Admin'
+    password: 'zabbix'
+    host_groups: {'oracle','eos'}
+#    action: [{name: 'os'}]
+    action: [
+      {action_name: 'oracle', evaltype: 'AND', operator: 'like', conditiontype: 'host metadata', value: 'oracle', grouptype: 'add to host group', group: {'oracle'}, templatetype: 'link to template', template: {'Template OS Linux'}},
+      {action_name: 'eos', evaltype: 'AND', operator: 'like', conditiontype: 'host metadata', value: 'eos', grouptype: 'add to host group', group: {'eos'}, templatetype: 'link to template', template: {'Template OS Linux'}}
+    ]
+  roles:
+    - zabbix-action
+

@@ -1,0 +1,9 @@
+
+- name: start influxdb
+  shell: service influxdb start
+  when: ansible_os_family == "RedHat"
+
+- name: restart influxdb
+  shell: service influxdb restart
+  when: ansible_os_family == "RedHat"
+

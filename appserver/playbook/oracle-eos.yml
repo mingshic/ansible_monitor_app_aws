@@ -1,0 +1,110 @@
+
+- hosts: oracle
+  remote_user: root
+  become_user: root
+  become: True
+  vars:
+    get_bukect_rui: "downloadtoec2/app/"
+    get_package_uri: [
+      { get_package: "linux.x64_11gR2_database_1of2.zip" },
+      { get_package: "linux.x64_11gR2_database_2of2.zip" },
+    ]
+    oracle_base_begin: 'data/u01'
+    oracle_version: '11.2.0'
+    oracle_sid: 'ntoptest'
+    oracle_db_number: 'db_1'
+    sourceDB: 'ntoptest'
+    instanceName: 'ntoptest'
+    syspassword: 'oracle'
+    systempassword: 'oracle'
+    sysmanpassword: 'oracle'
+    dbsnmppassword: 'oracle'
+    characterset: 'ZHS16GBK'
+  roles:
+    - oracle_configure
+
+- hosts: oracle
+  remote_user: oracle
+  become_user: oracle
+  become: True
+  vars:
+    oracle_base_begin: 'data/u01'
+    oracle_version: '11.2.0'
+    oracle_sid: 'ntoptest'
+  roles:
+    - oracle_install
+
+- hosts: oracle
+  remote_user: root
+  become_user: root
+  become: True
+  vars:
+    oracle_base_begin: 'data/u01'
+    oracle_version: '11.2.0'
+    oracle_db_number: 'db_1'
+  roles:
+    - oracle_rootsh
+
+- hosts: oracle
+  remote_user: oracle
+  become_user: oracle
+  become: True
+  vars:
+    oracle_base_begin: 'data/u01'
+    oracle_version: '11.2.0'
+    oracle_sid: 'ntoptest'
+    oracle_db_number: 'db_1'
+  roles:
+    - oracle_listener
+    - oracle_instance_run
+
+- hosts: oracle
+  remote_user: oracle
+  become_user: oracle
+  become: True
+  vars:
+    db_tablespace: 'ntop'
+    oracle_base_begin: 'data/u01'
+    instanceName: 'ntoptest'
+    tablespace_file: 'ntop01.dbf'
+    tablespace_size: '4G'
+    table_autoextend_size: '3G'
+    db_eos_user: 'ntop'
+    db_eos_password: 'ntop'
+  roles:
+    - oracle_sql 
+
+- hosts: eos
+  remote_user: root
+  become_user: root
+  become: True
+  vars:
+#gain tomcat and eos on s3 by wget of get_for module
+
+    get_bukect_rui: "downloadtoec2/app/"
+    get_package_uri: [
+      { get_package: "EOS_Platform_7.2_Enterprise_Edition_Linux.tar" },
+      { get_package: "apache-tomcat-7.0.68.tar.gz" },
+    ]
+#tomcat config
+    tomcat_root_path: '/web'
+#eos configure file
+    tomcat_home: "{{ tomcat_root_path }}/apache-tomcat-7.0.68"
+#    eos_package: "EOS_Platform_7.2_Enterprise_Edition_Linux.tar"
+    database_driver: 'oracle.jdbc.driver.OracleDriver'
+    db_type: 'Oracle'
+    db_ip: '10.200.1.159'
+    db_server_port: '1521'
+    datasource: 'NTOP'
+    db_instance_name: 'ntoptest'
+    db_user: 'ntop'
+    db_password: 'ntop'
+    db_url: 'jdbc:oracle:thin:@{{ db_ip }}:{{ db_server_port }}:{{ db_instance_name }}'
+    default_app_name: 'test_delivery'
+    governor_sysadmin_pwd: '000000'
+    workspace_sysadmin_pwd: '000000'
+    module_options: 'bps,cap,sso'
+    db_is_init: 'true'
+    install_dir: '/web/primeton/platform'
+  roles:
+    - eos_installer 

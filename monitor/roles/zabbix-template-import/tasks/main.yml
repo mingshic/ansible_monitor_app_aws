@@ -1,0 +1,39 @@
+
+
+- name: method user.login in
+  uri: 
+    url: "{{ zabbix_server_url }}"
+    method: POST
+    body:
+      jsonrpc: "2.0"
+      method: "user.login"
+      params:
+        user: "{{ zabbix_authori_user }}"
+        password: "{{ zabbix_authori_password }}"
+      id: 1 
+    status_code: 200,201
+    body_format: json
+    HEADER_Content-Type: "application/json" 
+  register: result_auth
+- set_fact:
+    auth: "{{ result_auth.json.result }}"
+
+- name: create template for host to it
+  uri:
+    url: "{{ zabbix_server_url }}"
+    method: POST 
+    body:
+      jsonrpc: "2.0"
+      method: "configuration.import"
+      params: 
+        rules: "{{ zabbix_import_rules }}"
+        source: "{{ lookup('file', '{{ item }}') }}"
+        format: "xml"
+      auth: "{{ auth }}"
+      id: 2
+    status_code: 200,201
+    body_format: json
+    HEADER_Content-Type: "application/json"
+  register: result
+  changed_when: result.json.result is defined and result.json.result == True
+  with_items: "{{ zabbix_template_src }}"

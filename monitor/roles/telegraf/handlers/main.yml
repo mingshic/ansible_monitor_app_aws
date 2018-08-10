@@ -1,0 +1,9 @@
+
+- name: start telegraf
+  shell: service telegraf start
+  when: ansible_os_family == "RedHat"
+
+- name: restart telegraf
+  shell: service telegraf restart
+  when: ansible_os_family == "RedHat"
+

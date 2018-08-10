@@ -1,0 +1,30 @@
+---
+
+- hosts: all
+  user: root
+  vars:
+#create group and create group on policy to one on one, one on more, more on more, more on one
+    group_and_policy:
+      group1: 
+        group_name: 'g1'
+        policy: 'route53.json'
+      group2:
+        group_name: 'g1'
+        policy: 'user_policy.json'
+#create user and this user join in created group and create user to only
+    user_and_policy:
+      user1:
+        user_name: 'msctest'
+        password: 'Msc123456123-='
+        policy: 'user_policy.json'
+#    iam_user: [
+#      { name: "msctest", password: "Msc123456123-=" }
+#    ]
+#generate auth file to give user by email at sendmail
+    region: "us-east-1"
+    authentication_file: "/root/aws_user_authentication_file"
+ #   user_name: 
+  roles:
+    - iam_user
+
+

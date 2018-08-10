@@ -1,0 +1,12 @@
+
+- name: start mysql
+  shell: service mysql start
+  when: ansible_os_family == "RedHat" 
+
+- name: restart mysql
+  shell: service mysql restart
+  when: ansible_os_family == "RedHat"
+
+- name: start mariadb
+  service: name=mariadb state=started
+  when: ansible_os_family == "RedHat"

@@ -1,0 +1,32 @@
+---
+
+- name: create a role
+  iam_role:
+    name: "{{ item.value.role_name }}"
+    assume_role_policy_document: "{{ lookup('template', '{{ principal_service }}.json') }}"
+    state: present
+  with_dict: "{{ role_and_policy }}"
+  register: created_role
+  tags:
+    - create-role
+
+- name: create a policy to a role
+  iam_policy:
+    iam_type: role
+    iam_name: "{{ item.value.role_name }}"
+    policy_name: "{{ item.value.policy }}"
+    policy_json: "{{ lookup('file', '{{ item.value.policy }}') }}"
+    state: present
+  with_dict: "{{ role_and_policy }}" 
+  tags:
+    - create-role
+    
+#- name: Create a role
+#  iam_policy:
+#    iam_type: role
+#    name: "{{ item.value.role_name }}"
+#    policy_name: 
+#      - "{{ lookup('file', '{{ item.value.policy }}') }}"
+#    state: present
+#  with_dict: "{{ role_and_policy }}"
+

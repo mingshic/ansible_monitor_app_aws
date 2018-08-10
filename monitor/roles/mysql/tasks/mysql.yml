@@ -1,0 +1,93 @@
+
+
+- name: removes MySQL anonymous user account
+  mysql_user: 
+    login_user: ''
+    login_password: ''
+    login_host: ''
+    name: ''
+    host_all: yes
+    login_unix_socket: "/var/lib/mysql/mysql.sock"
+    state: absent 
+  when: (mysql_version_way_to_judge1 != "ar.gz") and (mysql_version_way_to_judge1 != "ar")
+  tags:
+    - mysql_second_operation
+    - test
+  
+- name: root user with 127.0.0.1 -- with grant option
+  mysql_user:
+    name: root
+    host: 127.0.0.1
+    password: "{{ mysql_root_127_screte }}"
+    priv: '*.*:ALL,GRANT'
+    login_unix_socket: "/var/lib/mysql/mysql.sock"
+    state: present
+  when: (mysql_version_way_to_judge1 != "ar.gz") and (mysql_version_way_to_judge1 != "ar")
+  tags:
+    - mysql_second_operation
+    - test
+
+- name: root user with hostname -- with grant option
+  mysql_user:
+    name: root
+    host: "{{ mysql_hostname }}"
+    password: "{{ mysql_root_hostname_screte }}"
+    priv: '*.*:ALL,GRANT'
+    login_unix_socket: "/var/lib/mysql/mysql.sock"
+    state: present
+  when: (mysql_version_way_to_judge1 != "ar.gz") and (mysql_version_way_to_judge1 != "ar")
+  tags:
+    - mysql_second_operation
+    - test
+
+- name: root user with ::1 -- with grant option
+  mysql_user:
+    name: root
+    host: '::1'
+    password: "{{ mysql_root_1_screte }}"
+    priv: '*.*:ALL,GRANT'
+    login_unix_socket: "/var/lib/mysql/mysql.sock"
+    state: present
+  when: (mysql_version_way_to_judge1 != "ar.gz") and (mysql_version_way_to_judge1 != "ar")
+  tags:
+    - mysql_second_operation
+    - test
+
+- name: root user with localhost --  with grant option
+  mysql_user:
+    name: root
+    host: localhost
+    password: "{{ mysql_root_localhost_screte }}"
+    priv: '*.*:ALL,GRANT'
+    login_unix_socket: "/var/lib/mysql/mysql.sock"
+    state: present
+  when: (mysql_version_way_to_judge1 != "ar.gz") and (mysql_version_way_to_judge1 != "ar")
+  tags:
+    - mysql_second_operation
+    - test
+
+- name: zabbix user with grant option
+  mysql_user:
+    login_user: root
+    login_password: "{{ mysql_root_localhost_screte }}"
+    login_port: "{{ mysql_mysqld_port }}"
+    name: "{{ zabbix_DBUser }}"
+    host: 127.0.0.1
+    password: "{{ mysql_zabbix_127_screte }}"
+    priv: "{{ zabbix_DBName }}.*:ALL,GRANT"
+    login_unix_socket: "/var/lib/mysql/mysql.sock"
+    state: present
+  when: (mysql_version_way_to_judge1 != "ar.gz") and (mysql_version_way_to_judge1 != "ar")
+
+- name: zabbix user with grant option
+  mysql_user:
+    login_user: root
+    login_password: "{{ mysql_root_localhost_screte }}"
+    login_port: "{{ mysql_mysqld_port }}"
+    name: "{{ zabbix_DBUser }}"
+    host: localhost
+    password: "{{ mysql_zabbix_localhost_screte }}"
+    priv: "{{ zabbix_DBName }}.*:ALL,GRANT"
+    login_unix_socket: "/var/lib/mysql/mysql.sock"
+    state: present
+  when: (mysql_version_way_to_judge1 != "ar.gz") and (mysql_version_way_to_judge1 != "ar")

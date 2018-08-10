@@ -1,0 +1,147 @@
+
+- name: mysql file 
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+  with_items: "{{ files }}"
+  when: (ansible_os_family == "RedHat") 
+  tags:
+    - mysql_second_operation
+
+- name: Install dependent mysql
+  yum:
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+  with_items: "{{ mariadb_rpm_dependent }}" 
+  when: (ansible_os_family == "RedHat") and (project_mysql == "mariadb")
+  tags:
+    - mysql_second_operation
+
+- name: Install dependent mysql
+  yum:
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+  with_items: "{{ mysql_rpm_dependent }}"
+  when: (ansible_os_family == "RedHat") and (project_mysql == "mysql")
+  tags:
+    - mysql_second_operation
+
+- name: create {{ project_mysql }} directory
+  file: dest=/tmp/{{ project_mysql }} state=directory
+  when: (mysql_version_way_to_judge1 == "ar.gz") or (mysql_version_way_to_judge1 == "ar") or (mysql_version_way_to_judge2 == "m")
+  tags:
+    - mysql_second_operation
+
+- name: Install mysql (mariadb-5.5.52)
+  yum:
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+  with_items: "{{ mariadb_rpm_install }}"
+  when: (mysql_version_way_to_judge1 != "ar.gz") and (mysql_version_way_to_judge1 != "ar") and (mysql_version_way_to_judge2 != "m") and (project_mysql == "mariadb")
+  tags:
+    - mysql_second_operation
+
+- name: Install mysql (mysql-5.6)
+  yum:
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+  with_items: "{{ mysql_rpm_install }}"
+  when: (mysql_version_way_to_judge1 != "ar.gz") and (mysql_version_way_to_judge1 != "ar") and (mysql_version_way_to_judge2 != "m") and (project_mysql == "mysql")  
+  tags:
+    - mysql_second_operation
+
+- name: create mysql group
+  group: name={{ mysql_group }} state=present
+  when: ansible_os_family == "RedHat"
+  tags:
+    - mysql_second_operation
+
+- name: create mysql user to support mysql server
+  user: name={{ mysql_user }} shell=/bin/bash groups={{ mysql_group }} home=/home/{{ mysql_user }} state=present
+  when: ansible_os_family == "RedHat"
+  tags:
+    - mysql_second_operation
+
+- name: start mysql (mariadb-5.5.52)
+  shell: service mariadb start
+  when: (mysql_version_way_to_judge1 != "ar.gz") and (mysql_version_way_to_judge1 != "ar") and (mysql_version_way_to_judge2 == "m") or (project_mysql == "mariadb")
+
+- name: start mysql (mysql-5.6)
+  shell: service mysqld start
+  when: (mysql_version_way_to_judge1 != "ar.gz") and (mysql_version_way_to_judge1 != "ar") and (mysql_version_way_to_judge2 == "m") or (project_mysql == "mysql")
+
+- name: create mysql work directory
+  file: dest={{ item.dest }} owner={{ mysql_user }} group={{ mysql_group }} state=directory
+  with_items:
+    - { dest: "{{ mysql_data }}" }
+    - { dest: "{{ mysql_data_log }}" }
+    - { dest: "{{ mysql_data_bin_log }}" }
+    - { dest: "{{ mysql_conf }}" }
+    - { dest: "{{ mysql_var }}" }
+  when: (mysql_version_way_to_judge1 == "ar.gz") or (mysql_version_way_to_judge1 == "ar")
+  tags:
+    - mysql_second_operation
+
+- name: template transfer mysql dir
+  copy: src={{ mysql_version_way }} dest=/tmp/{{ project_mysql }}/{{ mysql_version_way }}
+  when: (mysql_version_way_to_judge1 == "ar.gz") or (mysql_version_way_to_judge1 == "ar") or (mysql_version_way_to_judge2 == "m")
+  tags:
+    - mysql_second_operation
+
+- name: unarchive mysql
+  unarchive: 
+    src: /tmp/{{ project_mysql }}/{{ mysql_version_way }} 
+    dest: /tmp/{{ project_mysql }} 
+    remote_src: True
+  when: (mysql_version_way_to_judge1 == "ar.gz") or (mysql_version_way_to_judge1 == "ar") or (mysql_version_way_to_judge2 == "m") 
+  tags:
+    - mysql_second_operation
+
+- name: copy {{ mysql_version_way_to_dir }} to /usr/local been mysql
+  shell: test -d {{ mysql_basedir }} ||  cp -rp /tmp/{{ project_mysql }}/{{ mysql_version_way_to_dir }} {{ mysql_basedir }} 
+  when: (mysql_version_way_to_judge1 == "ar.gz") or (mysql_version_way_to_judge1 == "ar")
+  tags:
+    - mysql_second_operation
+
+- name: template my.cnf to mysql server
+  template: src=my.cnf.j2 dest={{ mysql_conf }}/my.cnf
+  when: (mysql_version_way_to_judge1 == "ar.gz") or (mysql_version_way_to_judge1 == "ar")
+  tags:
+    - mysql_second_operation
+
+- name: template mysql.service to mysql server
+  template: src=mysql.service.j2 dest={{ mysql_mysqld }}/mysql mode=755 owner=root group=root
+  when: (mysql_version_way_to_judge1 == "ar.gz") or (mysql_version_way_to_judge1 == "ar")
+  tags:
+    - mysql_second_operation
+
+- name: chown mysql work directory -R on mysql.mysql
+  shell: chown mysql.mysql {{ mysql_data }} -R && chown mysql.mysql {{ mysql_data_log }} -R && chown mysql.mysql {{ mysql_data_bin_log }} -R && chown mysql.mysql {{ mysql_basedir }} -R && chown mysql.mysql {{ mysql_var }} -R
+  when: (mysql_version_way_to_judge1 == "ar.gz") or (mysql_version_way_to_judge1 == "ar")
+  tags:
+    - mysql_second_operation
+
+- name: source /etc/profile
+  shell: grep -q 'MYSQL_HOME' /etc/profile || echo "MYSQL_HOME={{ mysql_basedir }}" >> /etc/profile && grep -q 'MYSQL_HOME/bin' /etc/profile || echo "export PATH=\$MYSQL_HOME/bin:\$PATH" >> /etc/profile && grep -q 'MYSQL_HOME/lib' /etc/profile || echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$MYSQL_HOME/lib" >> /etc/profile && grep -q "{{ mysql_data }}" /etc/profile || echo "alias mysql='mysql -S {{ mysql_data }}/mysql.sock'" >> /etc/profile && source /etc/profile
+  when: (mysql_version_way_to_judge1 == "ar.gz") or (mysql_version_way_to_judge1 == "ar")
+  tags:
+    - mysql_second_operation
+
+- name: mysql_install_db to initialization
+  shell: cd {{ mysql_basedir }} && ./scripts/mysql_install_db --user=mysql --defaults-file={{ mysql_conf }}/my.cnf --basedir={{ mysql_basedir }} --datadir={{ mysql_data }}
+  when: (mysql_version_way_to_judge1 == "ar.gz") or (mysql_version_way_to_judge1 == "ar")
+  tags:
+    - mysql_second_operation
+
+- name: chkconfig mysql and start mysql
+  shell: chkconfig --add mysql && service mysql start
+  when: (mysql_version_way_to_judge1 == "ar.gz") or (mysql_version_way_to_judge1 == "ar")
+  tags:
+    - mysql_second_operation
+
+- include: mysql.yml
+
+- include: mysql_tar.yml

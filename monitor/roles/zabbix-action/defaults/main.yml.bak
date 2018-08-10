@@ -1,0 +1,42 @@
+zabbix_import_rules: {
+        "groups": {
+                "createMissing": true
+        },
+        "templates": {
+                "updateExisting": true,
+                "createMissing": true 
+        },
+        "templateScreens": {
+                "updateExisting": true,
+                "createMissing": true
+        },
+        "templateLinkage": {
+                "createMissing": true
+        },
+        "applications": {
+                "createMissing": true
+        },
+        "items": {
+                "createMissing": true,
+                "updateExisting": true
+        },
+        "discoveryRules": {
+                "updateExisting": true,
+                "createMissing": true
+        },
+        "triggers": {
+                "updateExisting": true,
+                "createMissing": true
+        },
+        "graphs": {
+                "updateExisting": true,
+                "createMissing": true
+        },
+        "httptests": {
+                "updateExisting": true,
+                "createMissing": true
+        },
+        "valueMaps": {
+                "createMissing": true
+        }
+},

@@ -1,0 +1,122 @@
+---
+
+- name: Get the os trusty AMI
+  ec2_ami_find: 
+    region: '{{ region }}'
+#    ec2_access_key: '{{ ec2_access_key }}'
+#    ec2_secret_key: '{{ ec2_secret_key }}'
+    name: "{{ AMI_Name }}"
+    owner: "{{ owner_code }}"
+    sort: name
+    sort_order: descending
+    sort_end: 1
+  register: ami_find
+  tags:
+    - selfami-create-ec2
+    - selfami-create-ec2-eip
+  when: way == "ami_ec2"
+
+- set_fact:
+    image: "{{ ami_find.results }}"
+  tags:
+    - selfami-create-ec2
+    - selfami-create-ec2-eip
+  when: way == "ami_ec2"
+
+- name: find subnets and use register data
+  ec2_vpc_subnet_facts:
+    region: '{{ region }}'
+#    ec2_access_key: '{{ ec2_access_key }}'
+#    ec2_secret_key: '{{ ec2_secret_key }}'
+    filters:
+      "tag:Name": "{{ subnet_Name }}"
+  register: subnet_id
+  tags:
+    - selfami-create-ec2
+    - selfami-create-ec2-eip
+    - provider-create-ec2
+    - provider-create-ec2-eip
+
+- set_fact:
+    subnet: "{{ subnet_id.subnets }}"
+  tags:
+    - selfami-create-ec2
+    - selfami-create-ec2-eip
+  when: way == "ami_ec2"
+
+- name: start the ec2 instance
+  ec2:
+    image: "{{ ami_find.results[0].ami_id }}"
+    region: '{{ region }}'
+    instance_type: '{{ item.value.instance_type }}'
+    assign_public_ip: '{{ item.value.assign_public_ip }}'
+    volumes: "{{ item.value.volumes }}"
+    key_name: '{{ item.value.pair_key_name }}'
+    group: '{{ item.value.security_group_name }}'
+    instance_tags: '{{ item.value.resource_tags_instance_ec2 }}'
+    exact_count: '{{ item.value.instance_number }}'
+    count_tag: '{{ item.value.count_tag }}'
+    vpc_subnet_id: '{{ subnet_id.subnets[0].id }}'
+  with_dict: "{{ ami_ec2 }}"
+  register: ec2_ami
+  tags:
+    - selfami-create-ec2
+    - selfami-create-ec2-eip
+  when: way == "ami_ec2"
+
+- set_fact:
+    amiec: "{{ ec2_ami.results }}"
+  tags:
+    - selfami-create-ec2
+    - selfami-create-ec2-eip
+  when: way == "ami_ec2"
+
+- name: elastic IPs with instances
+  ec2_eip:
+    region: "{{ region }}"
+    in_vpc: true
+    device_id: "{{ item.tagged_instances[0].id }}"
+  with_items: "{{ ec2_ami.results }}"
+  when: (way == "ami-ec2") and "{{ item.item.value.eip }}"
+  register: eip
+  tags:
+    - selfami-create-ec2-eip
+  when: way == "ami_ec2"
+
+- set_fact:
+    eipip: "{{ eip }}"
+  tags:
+    - selfami-create-ec2-eip
+  when: way == "ami_ec2"
+
+- name: provider AMI to create ec2
+  ec2:
+    image: "{{ ami_id }}"
+    region: '{{ region }}'
+    instance_type: '{{ item.value.instance_type }}'
+    assign_public_ip: '{{ item.value.assign_public_ip }}'
+    volumes: "{{ item.value.volumes }}"
+    key_name: '{{ item.value.pair_key_name }}'
+    group: '{{ item.value.security_group_name }}'
+    instance_tags: '{{ item.value.resource_tags_instance_ec2 }}'
+    exact_count: '{{ item.value.instance_number }}'
+    count_tag: '{{ item.value.count_tag }}'
+    vpc_subnet_id: '{{ subnet_id.subnets[0].id }}'
+  with_dict: "{{ ec2 }}"
+  register: ec2
+  tags:
+    - provider-create-ec2
+    - provider-create-ec2-eip
+  when: way == "ec2" 
+
+- name: elastic IPs with instances
+  ec2_eip:
+    region: "{{ region }}"
+    in_vpc: true
+    device_id: "{{ item.tagged_instances[0].id }}"
+  with_items: "{{ ec2.results }}"
+  when: (way == "ec2") and "{{ item.item.value.eip }}"
+  register: eip
+  tags:
+    - provider-create-ec2-eip
+  when: way == "ec2"

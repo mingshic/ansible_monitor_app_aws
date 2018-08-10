@@ -1,0 +1,13 @@
+
+
+- name: package type to set variables
+  set_fact:
+    php_version_way_to_judge1: "{{ php_version_way | regex_replace('^php-?.*t', '') }}"
+    php_version_way_to_judge2: "{{ php_version_way | regex_replace('^php-?.*p', '') }}"
+    php_version_way_to_dir: "{{ php_version_way | regex_replace('.tar(.gz)?', '') }}"
+
+
+
+- include: "RedHat.yml"
+
+

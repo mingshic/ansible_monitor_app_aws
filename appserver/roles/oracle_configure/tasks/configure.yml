@@ -1,0 +1,91 @@
+
+
+- name: hosts file
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ ansible_default_ipv4.address }}   {{ ansible_hostname }}"
+
+#- name: systcl fil
+#  sysctl:
+#    name: fs.aio-max-nr
+#    value: 1048576
+#
+- name: sysctl file
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    #sysctl_file: /etc/sysctl.conf
+  with_items:
+    - { name: 'kernel.msgmnb', value: '65536' }
+    - { name: 'kernel.msgmax', value: '65536' }
+    - { name: 'fs.aio-max-nr', value: '1048576' }
+    - { name: 'fs.file-max', value: '6815744' }
+    - { name: 'kernel.shmall', value: '2097152' }
+    - { name: 'kernel.shmmni', value: '4096' }
+    - { name: 'kernel.shmmax', value: '68719476736' }
+    - { name: 'kernel.sem', value: '250 32000 100 128' }
+    - { name: 'net.ipv4.ip_local_port_range', value: '9000 65500' }
+    - { name: 'net.core.rmem_default', value: '262144' }
+    - { name: 'net.core.rmem_max', value: '4194304' }
+    - { name: 'net.core.wmem_default', value: '262144' }
+    - { name: 'net.core.wmem_max', value: '1048586' }
+
+- name: limits file
+  pam_limits:
+    domain: "{{ item.domain }}"
+    limit_type: "{{ item.type }}"
+    limit_item: "{{ item.item }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { domain: 'oracle', type: 'soft', item: 'nproc', value: '2047' }
+    - { domain: 'oracle', type: 'hard', item: 'nproc', value: '16384' }
+    - { domain: 'oracle', type: 'soft', item: 'nofile', value: '1024' }
+    - { domain: 'oracle', type: 'hard', item: 'nofile', value: '65536' }
+
+- name: file directory mkdir
+  file:
+    path: "{{ item.path }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+    state: directory
+  with_items:
+    - { path: '/{{ oracle_base_begin }}', owner: 'root', group: 'root', mode: 755 }
+    - { path: '/{{ oracle_base_begin }}/app', owner: 'root', group: 'root', mode: 755 }
+    - { path: '/{{ oracle_base_begin }}/etc', owner: 'root', group: 'root', mode: 755 }
+    - { path: '/{{ oracle_base_begin }}/app/oracle', owner: 'oracle', group: 'oinstall', mode: 775 }
+    - { path: '/{{ oracle_base_begin }}/app/oracle/product', owner: 'oracle', group: 'oinstall', mode: 755 }
+    - { path: '/{{ oracle_base_begin }}/app/oracle/product/{{ oracle_version }}', owner: 'oracle', group: 'oinstall', mode: 755 }
+    - { path: '/{{ oracle_base_begin }}/app/oracle/product/{{ oracle_version }}/{{ oracle_db_number }}', owner: 'oracle', group: 'oinstall', mode: 755 }
+    - { path: '/{{ oracle_base_begin }}/app/oracle/oradata', owner: 'oracle', group: 'oinstall', mode: 755 }
+    - { path: '/{{ oracle_base_begin }}/app/oracle/inventory', owner: 'oracle', group: 'oinstall', mode: 770 }
+    - { path: '/{{ oracle_base_begin }}/app/oracle/admin', owner: 'oracle', group: 'oinstall', mode: 755 }
+    - { path: '/{{ oracle_base_begin }}/app/oracle/checkpoints', owner: 'oracle', group: 'oinstall', mode: 755 }
+    - { path: '/{{ oracle_base_begin }}/app/oracle/fast_recovery_area', owner: 'oracle', group: 'oinstall', mode: 755 }
+    - { path: '/{{ oracle_base_begin }}/app/oracle/oradiag_oracle', owner: 'oracle', group: 'oinstall', mode: 755 }
+    - { path: '/{{ oracle_base_begin }}/app/oracle/cfgtoollogs', owner: 'oracle', group: 'oinstall', mode: 755 }
+    - { path: '/{{ oracle_base_begin }}/app/oracle/diag', owner: 'oracle', group: 'oinstall', mode: 755 }
+#    - { path: '/{{ oracle_base_begin }}/app/oraInventory', owner: 'oracle', group: 'oinstall', mode: 770 }
+
+- name: pam.d/login file increase
+  lineinfile:
+    path: /etc/pam.d/login
+    line: "{{ item.line }}"
+  with_items:
+    - { line: "session    required     /lib64/security/pam_limits.so" }
+    - { line: "session    required     pam_limits.so" }
+  
+- name: copy file login profile db_install.rsp db_..
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+  with_items:
+#    - { src: 'login', dest: '/etc/pam.d/login', mode: 644, owner: 'root', group: 'root' }
+    - { src: 'profile', dest: '/etc/profile', mode: 644, owner: 'root', group: 'root' }
+    - { src: 'db_install.rsp', dest: '/{{ oracle_base_begin }}/etc', mode: 644, owner: 'root', group: 'root' }
+    - { src: 'dbca.rsp', dest: '/{{ oracle_base_begin }}/etc', mode: 644, owner: 'root', group: 'root' }
+    - { src: 'netca.rsp', dest: '/{{ oracle_base_begin }}/etc', mode: 755, owner: 'root', group: 'root' }
+    - { src: '.bash_profile', dest: '/home/oracle/.bash_profile', mode: 644, owner: 'oracle', group: 'oinstall' }

@@ -1,0 +1,16 @@
+
+- name: start nginxd
+  shell: service nginxd start
+  when: ansible_os_family == "RedHat"
+
+- name: start nginx
+  service: name=nginx state=started
+  when: ansible_os_family == "RedHat"
+
+- name: restart nginx
+  shell: service nginxd restart
+  when: ansible_os_family == "RedHat"
+
+- name: reload nginx
+  shell: service nginxd reload
+  when: ansible_os_family == "RedHat"

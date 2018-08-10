@@ -1,0 +1,15 @@
+---
+
+- name: pip install zabbix-api
+  pip:
+    name: zabbix-api
+
+- name: delete this host
+  zabbix_host:
+    server_url: "http://{{ zabbix_IP_daemon }}/zabbix"
+    login_user: "{{ user }}"
+    login_password: "{{ password }}"
+    host_name: "{{ ansible_hostname }}"
+    state: "absent"
+  tags:
+    - delete_host

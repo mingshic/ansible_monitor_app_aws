@@ -1,0 +1,24 @@
+---
+
+- name: create a vpc
+  ec2_vpc:
+    region: "us-east-1"
+    internet_gateway: True
+    resource_tags: { Name: "ansible_test", env: temp_production }
+    cidr_block: 10.0.0.0/16
+    subnets:
+      - cidr: 10.0.0.0/24
+        resource_tags:
+          env: temp_production
+          tier: web
+      - cidr: 10.0.1.0/24
+        resource_tags:
+          env: temp_production
+          tier: web
+    route_tables:
+      - subnets:
+        - 10.0.0.0/24
+        - 10.0.1.0/24
+        routes:
+        - dest: 0.0.0.0/0
+          gw: igw

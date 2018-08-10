@@ -1,0 +1,32 @@
+---
+
+- name: create group to policy
+  zabbix_group:
+    server_url: "{{ server }}"
+    login_user: "{{ user }}"
+    login_password: "{{ password }}"
+    state: 'present'
+    host_groups: "{{ item }}"
+  with_items: "{{ host_groups }}"
+
+- name: run action discovery to policy
+  zabbix_action:
+    server_url: "{{ server }}"
+    login_user: "{{ user }}"
+    login_password: "{{ password }}"
+    name: "{{ item.action_name }}"
+    conditions_filter:
+      evaltype: "{{ item.evaltype }}"
+      conditions:
+        - operator: "{{ item.operator }}"
+          conditiontype: "{{ item.conditiontype }}"
+          value: "{{ item.value }}"
+    operations:
+      - operationtype: "{{ item.grouptype }}"
+        opgroup: "{{ item.group }}" 
+      - operationtype: "{{ item.templatetype }}"
+        optemplate: "{{ item.template }}"
+  with_items: "{{ action }}"
+#      register: rc
+#    - debug: msg="{{ rc }}"
+

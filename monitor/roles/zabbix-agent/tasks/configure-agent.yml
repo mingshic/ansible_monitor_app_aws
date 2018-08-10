@@ -1,0 +1,82 @@
+---
+
+- name: mkdir /etc/zabbix/zabbix_agentd.d
+  file:
+    path: "{{ item.path }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+    state: directory
+  with_items:
+    - { path: '/etc/zabbix/zabbix_agentd.d/script', owner: 'root', group: 'root', mode: 755 }
+
+- name: configure /etc/sudoers
+  lineinfile: dest=/etc/sudoers state=present line='{{ item }}' validate='visudo -cf %s'
+  with_items:
+    - "zabbix          ALL=NOPASSWD: ALL"
+
+- name: crontab for iostat 
+  cron: name="iostat" minute="*" job="iostat -m -x -t 1 -d 2 >/tmp/iostat_output 2>&1"
+
+
+- name: the template script file put to zabbix agent 
+  template: src={{item.src}} dest={{item.dest}} owner=zabbix group=zabbix mode={{item.mode}} force=yes
+  with_items:
+  - { src: 'script/tcp_connections.sh', dest: '/etc/zabbix/zabbix_agentd.d/script/tcp_connections.sh', mode: 755 }
+  - { src: 'script/response_time.sh', dest: '/etc/zabbix/zabbix_agentd.d/script/response_time.sh', mode: 755 }
+  - { src: 'script/redis_stats.sh', dest: '/etc/zabbix/zabbix_agentd.d/script/redis_stats.sh', mode: 755 }
+  - { src: 'script/ngx_status.sh', dest: '/etc/zabbix/zabbix_agentd.d/script/ngx_status.sh', mode: 755 }
+
+- name: the template confparameter file put to zabbix-agent
+  template: src={{item.src}} dest={{item.dest}} owner=zabbix group=zabbix mode={{item.mode}} force=yes
+  with_items:
+  - { src: 'conf/check_port.conf', dest: '/etc/zabbix/zabbix_agentd.d/check_port.conf', mode: 755 }
+  - { src: 'conf/io.conf', dest: '/etc/zabbix/zabbix_agentd.d/io.conf', mode: 755 }
+  - { src: 'conf/offlinesqps.conf', dest: '/etc/zabbix/zabbix_agentd.d/offlinesqps.conf', mode: 755 }
+  - { src: 'conf/serverxml.conf', dest: '/etc/zabbix/zabbix_agentd.d/serverxml.conf', mode: 755 }
+  - { src: 'conf/tcp_connection.conf', dest: '/etc/zabbix/zabbix_agentd.d/tcp_connection.conf',mode: 755 }
+
+#- name: the template confparameter file put to zabbix-agent
+#  template: 
+#    src: "{{item.src}}" 
+#    dest: "/etc/zabbix/zabbix_agentd.d/{{ item.path }}" 
+#    owner: zabbix  
+#    group: zabbix 
+#    mode: "{{item.mode}}"
+#    force: yes
+#  with_filetree: "conf/"
+
+#- name: the files script file put to zabbix agent
+#  copy: >
+#    src={{ item.src }}
+#    dest={{ item.dest }}
+#    owner=zabbix
+#    group=zabbix
+#    mode={{item.mode}}
+#    force=yes
+#  with_items:
+#  - { src: 'script/redis_port.py', dest: '/etc/zabbix/zabbix_agentd.d/script/redis_port.py', mode: 755 }
+#  - { src: 'script/lld-disks.py', dest: '/etc/zabbix/zabbix_agentd.d/script/lld-disks.py', mode: 755 }
+#  - { src: 'script/check_port.py', dest: '/etc/zabbix/zabbix_agentd.d/script/check_port.py', mode: 755 }
+
+- name: the files script file put to zabbix agent
+  copy: 
+    src: "{{ item }}"
+    dest: "/etc/zabbix/zabbix_agentd.d/script/"
+    owner: zabbix
+    group: zabbix
+    mode: 0755
+#    force: yes
+  with_fileglob:
+    - "script/*"
+
+
+- name: service zabbix-agent restart rpm
+  service: name=zabbix-agent state=restarted
+  when: (zabbix_version_way_to_judge1 != "ar.gz") and (zabbix_version_way_to_judge1 != "ar") or (zabbix_version_way_to_judge2 == "m")
+
+- name: service zabbix-agent restart tar
+  shell: echo "1"
+  notify: 
+    - restart_zabbixd 
+  when: (zabbix_version_way_to_judge1 == "ar.gz") or (zabbix_version_way_to_judge1 == "ar") 

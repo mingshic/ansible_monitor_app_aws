@@ -1,0 +1,9 @@
+---
+
+- hosts: all
+  user: root
+  vars:
+    server_daemon: "172.18.201.53:8086"
+    telegraf_database: "telegraf"
+  roles:
+    - telegraf 

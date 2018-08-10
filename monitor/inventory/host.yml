@@ -1,0 +1,2 @@
+[test]
+172.18.201.51 ansible_user=root ansible_password=password

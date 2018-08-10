@@ -1,0 +1,20 @@
+
+- name: Install hapendencies rpm
+  yum:
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+  with_items: "{{ oracle_rpm_dependent }}"
+
+- name: "get http://vault.centos.org/5.11/os/x86_64/CentOS/pdksh-5.2.14-37.el5_8.1.x86_64.rpm"
+  get_url: 
+    url: http://vault.centos.org/5.11/os/x86_64/CentOS/pdksh-5.2.14-37.el5_8.1.x86_64.rpm
+    dest: /tmp/
+  register: pdksh  
+
+- name: rpm -ivh pdksh-5.2.14-37.el5_8.1.x86_64.rpm
+  yum:
+    name: /tmp/{{ pdksh.url | regex_replace('.*OS\/', '') }}
+    state: present
+  
+
+     

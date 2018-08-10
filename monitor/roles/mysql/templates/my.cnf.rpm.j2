@@ -1,0 +1,32 @@
+# For advice on how to change settings please see
+# http://dev.mysql.com/doc/refman/5.6/en/server-configuration-defaults.html
+[client]
+port = {{ mysql_client_port }}
+socket = /var/lib/mysql/mysql.sock
+
+[mysqld]
+user = mysql
+socket = /var/lib/mysql/mysql.sock
+pid-file = /var/lib/mysql/mysql.pid
+port = {{ mysql_mysqld_port }}
+datadir = /var/lib/mysql
+
+slave-net-timeout = {{ mysql_slave_net_timeout }}
+skip-external-locking
+skip-name-resolve
+character_set_server = {{ mysql_character_set_server }}
+
+log-bin = /var/lib/mysql/mysql-bin
+log-bin-index = /var/lib/mysql/mysql-bin.index
+binlog_format = {{ mysql_binlog_format }}
+server-id = {{ mysql_server_id }}
+relay-log = /var/lib/mysql/relay-bin
+relay-log-index = /var/lib/mysql/relay-bin.index
+
+open_files_limit = {{ mysql_open_files_limit }}
+max_connections = {{ mysql_max_connections }}
+expire_logs_days = {{ mysql_expire_logs_days }}
+long_query_time = {{ mysql_long_query_time }}
+slow_query_log = {{ mysql_query_log }}
+log-error = /var/log/mariadb/mysql-error.log
+slow-query-log-file = /var/log/mariadb/mysql-slow.log

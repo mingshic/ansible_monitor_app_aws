@@ -1,0 +1,69 @@
+
+- name: nginx file 
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+  with_items: "{{ files }}"
+  when: ansible_os_family == "RedHat"
+
+- name: Install dependent nginx
+  yum:
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+  with_items: "{{ nginx_rpm_dependent }}" 
+  when: ansible_os_family == "RedHat"
+   
+- name: create {{ project_nginx }} directory
+  file: dest=/tmp/{{ project_nginx }} state=directory
+  when: (nginx_version_way_to_judge1 == "ar.gz") or (nginx_version_way_to_judge1 == "ar") or (nginx_version_way_to_judge2 == "m")
+
+- name: template transfer nginx dir
+  copy: src={{ nginx_version_way }} dest=/tmp/{{ project_nginx }}/{{ nginx_version_way }}
+  when: (nginx_version_way_to_judge1 == "ar.gz") or (nginx_version_way_to_judge1 == "ar") or (nginx_version_way_to_judge2 == "m")
+
+- name: unarchive nginx
+  unarchive: 
+    src: /tmp/{{ project_nginx }}/{{ nginx_version_way }} 
+    dest: /tmp/{{ project_nginx }} 
+    remote_src: True
+  when: (nginx_version_way_to_judge1 == "ar.gz") or (nginx_version_way_to_judge1 == "ar")
+
+- name: install nginx rpm
+  yum:
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+  with_items: "{{ nginx_rpm_install }}"
+  when: (nginx_version_way_to_judge1 != "ar.gz") and (nginx_version_way_to_judge1 != "ar") and (nginx_version_way_to_judge2 != "m")
+
+- name: install nginx tar
+  shell: cd /tmp/{{ project_nginx }}/{{ nginx_version_way_to_dir }} && ./configure --prefix={{ nginx_prefix }} --conf-path={{ nginx_conf_file }} --sbin-path={{ nginx_sbin }} --error-log-path={{ nginx_error_log_file }} --pid-path={{ nginx_pid }} --with-http_ssl_module --with-http_v2_module --with-http_stub_status_module --with-pcre && make && make install 
+  when: (nginx_version_way_to_judge1 == "ar.gz") or (nginx_version_way_to_judge1 == "ar")
+
+- name: configure file nginx rpm
+  template: src=ngin_conf.default.rpm.j2 dest=/etc/nginx/nginx.conf
+  when: (nginx_version_way_to_judge1 != "ar.gz") and (nginx_version_way_to_judge1 != "ar") or (nginx_version_way_to_judge2 == "m")
+
+- name: start nginx rpm
+  service: name=nginx state=started
+  when: (nginx_version_way_to_judge1 != "ar.gz") and (nginx_version_way_to_judge1 != "ar") or (nginx_version_way_to_judge2 == "m")
+
+- name: configure file nginx tar
+  template: src=ngin_conf.default.j2 dest={{ nginx_conf }}/nginx.conf
+  when: (nginx_version_way_to_judge1 == "ar.gz") or (nginx_version_way_to_judge1 == "ar")
+
+- name: mkdir nginx www html
+  shell: mkdir {{ nginx_html }} -p && mkdir {{ nginx_log }} -p
+  when: (nginx_version_way_to_judge1 == "ar.gz") or (nginx_version_way_to_judge1 == "ar")
+
+- name: nginxd tansfer remote host
+  template: src=nginxd dest=/etc/init.d/nginxd mode=755 owner=root group=root
+  when: (nginx_version_way_to_judge1 == "ar.gz") or (nginx_version_way_to_judge1 == "ar")
+    
+- name: nginxd chkconfig
+  shell: chkconfig --add nginxd && chkconfig --level 2345 nginxd on
+  when: (nginx_version_way_to_judge1 == "ar.gz") or (nginx_version_way_to_judge1 == "ar")
+  notify: start nginxd
+

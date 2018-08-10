@@ -1,0 +1,9 @@
+
+
+#- include: "test.yml"
+- include: "hapendent.yml"
+- include: "oracle_user_group.yml"
+- include: "configure.yml"
+- include: "unarchive_oracle.yml"
+
+  

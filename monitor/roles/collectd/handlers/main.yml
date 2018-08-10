@@ -1,0 +1,9 @@
+
+- name: start collectd
+  shell: service collectd start
+  when: ansible_os_family == "RedHat"
+
+- name: restart collectd
+  shell: service collectd restart
+  when: ansible_os_family == "RedHat"
+

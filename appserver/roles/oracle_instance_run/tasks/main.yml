@@ -1,0 +1,3 @@
+
+- name: start dbca
+  shell: /{{ oracle_base_begin }}/app/oracle/product/{{ oracle_version }}/{{ oracle_db_number }}/bin/dbca -silent -responsefile /{{ oracle_base_begin }}/etc/dbca.rsp

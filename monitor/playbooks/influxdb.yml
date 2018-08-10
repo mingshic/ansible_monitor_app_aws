@@ -1,0 +1,8 @@
+---
+
+- hosts: all
+  user: root
+  vars:
+    influxdb_collectd_database: "collectd"
+  roles:
+    - influxdb 

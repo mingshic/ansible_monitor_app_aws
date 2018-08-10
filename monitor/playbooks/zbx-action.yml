@@ -1,0 +1,36 @@
+---
+
+- name: run xml action test
+  hosts: localhost
+  vars:
+    server: 'http://172.18.201.51:88/zabbix'
+    user: 'Admin'
+    password: 'zabbix'
+  tasks:
+#    - zabbix_action:
+#        server_url: "{{ server }}"
+#        login_user: "{{ user }}"
+#        login_password: "{{ password }}"
+#        name: 'My Auto_Create Action'
+#        state: present
+    - zabbix_action:
+        server_url: "{{ server }}"
+        login_user: "{{ user }}"
+        login_password: "{{ password }}"
+        name: 'My Auto_Create Action'
+        conditions_filter:
+          evaltype: 'AND'
+          conditions:
+            - operator: 'like'
+              conditiontype: 'host metadata'
+              value: 'WEB'
+        operations:
+          - operationtype: 'add to host group'
+            opgroup: 
+          - operationtype: 'link to template'
+            optemplate:
+#              - 'Template Nginx'
+              - 'Template OS Linux'
+#      register: rc
+#    - debug: msg="{{ rc }}"
+#

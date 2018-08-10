@@ -1,0 +1,44 @@
+---
+- name: Install via YUM Repo
+  yum_repository:
+    name: grafana
+    description: grafana yum repo
+    baseurl: https://packagecloud.io/grafana/stable/el/6/$basearch
+    gpgkey: https://packagecloud.io/gpg.key https://grafanarel.s3.amazonaws.com/RPM-GPG-KEY-grafana
+    enabled: yes
+    gpgcheck: yes
+    sslverify: yes
+    sslcacert: /etc/pki/tls/certs/ca-bundle.crt
+  when: ansible_distribution_major_version == "6"
+
+- name: Install via YUM Repo
+  yum_repository:
+    name: grafana
+    description: grafana yum repo
+    baseurl: https://packagecloud.io/grafana/stable/el/6/$basearch
+    gpgkey: https://packagecloud.io/gpg.key https://grafanarel.s3.amazonaws.com/RPM-GPG-KEY-grafana
+    enabled: yes
+    gpgcheck: yes
+    sslverify: yes
+    sslcacert: /etc/pki/tls/certs/ca-bundle.crt
+  when: ansible_distribution_major_version == "7"
+
+
+
+- name: Install depend 
+  yum: name={{ item }} state=present disable_gpg_check=yes
+  with_items: "{{grafana_packages}}"
+
+
+- name: Install grafana
+  yum: name=grafana state=present
+
+#- name: Install Grafana Config File
+#  template: src=grafana.ini.j2 dest=/etc/grafana/grafana.ini
+#  notify:
+#    - restart grafana
+
+- name: ADD Data Source to zabbix
+  command: /usr/sbin/grafana-cli plugins install alexanderzobnin-zabbix-app
+  notify:
+    - restart grafana

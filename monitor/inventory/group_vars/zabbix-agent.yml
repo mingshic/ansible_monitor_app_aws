@@ -1,0 +1,24 @@
+#[zabbix-api-action-hostmetadata-to-host-add-group]
+zabbix_IP_daemon: "172.18.201.51:88"
+user: "Admin"
+password: "zabbix"
+#[zabbix action name to condition name is one to one and one to more]
+#action_name: "vpn2"
+#condition_name_value: "vpn2"
+#group_name: "vpn2"
+#template_name: "Template OS Linux"
+hostmetadata: "linux"
+#[zabbix-conf]
+LogFileSize: 0
+debuglevel: 3
+EnableRemoteCommands: 0
+LogRemoteCommands: 0
+listenPort: 10050
+StartAgents: 3
+serverIP: "172.18.201.51"
+serverActive: "172.18.201.51"
+RefreshActiveChecks: 120
+BufferSend: 5
+BufferSize: 100
+MaxLinesPerSecond: 100
+UnsafeUserParameters: 1

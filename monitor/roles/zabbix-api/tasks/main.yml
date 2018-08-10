@@ -1,0 +1,110 @@
+
+
+- name: method user.login in
+  uri: 
+    url: "{{ zabbix_server_url }}"
+    method: POST
+    body:
+      jsonrpc: "2.0"
+      method: "user.login"
+      params:
+        user: "{{ zabbix_authori_user }}"
+        password: "{{ zabbix_authori_password }}"
+      id: 1 
+    status_code: 200
+    body_format: json
+    HEADER_Content-Type: "application/json" 
+  register: result_auth
+- set_fact:
+    auth: "{{ result_auth.json.result }}"
+
+- name: create group for host to it
+  uri:
+    url: "{{ zabbix_server_url }}"
+    method: POST 
+    body:
+      jsonrpc: "2.0"
+      method: "hostgroup.create"
+      params: 
+        name: "{{ item.name }}"
+      auth: "{{ auth }}"
+      id: 2
+    status_code: 200
+    body_format: json
+    HEADER_Content-Type: "application/json"
+  register: "{{ item.register }}"
+  changed_when: "{{ item.register }}.json.result is defined and {{ item.register }}.json.result == True"
+  with_items: "{{ create_zabbix_group }}" 
+
+- name: get group ID for action
+  uri:
+    url: "{{ zabbix_server_url }}"
+    method: POST
+    body:
+      jsonrpc: "2.0"
+      method: "hostgroup.get"
+      params:
+        output: "extend"
+        filter: 
+          name: "{{ zabbix_group_list }}"
+      auth: "{{ auth }}"
+      id: 3
+    status_code: 200
+    body_format: json
+    HEADER_Content-Type: "application/json"
+  register: result_group
+- set_fact:
+    groupID: "{{ result_group.json.result }}"
+
+#- name: set fact for groupID
+##  register: "{{ item.register }}"
+#  set_fact:
+#    "{{ item.groupIDsname }}": "result_getgroupID.json.result[0].groupid"
+#  with_items: "{{ set_group_ID_fact }}"
+#
+#
+- name: get template for action
+  uri:
+    url: "{{ zabbix_server_url }}"
+    method: POST
+    body:
+      jsonrpc: "2.0"
+      method: "template.get"
+      params:
+        output: "extend"
+        filter:
+          host: "{{ zabbix_template_list }}"
+      auth: "{{ auth }}"
+      id: 4
+    status_code: 200
+    body_format: json
+    HEADER_Content-Type: "application/json"   
+  register: result_gettemplate
+- set_fact:
+    templateID: "{{ result_gettemplate.json.result }}"
+#
+- name: create action of group and template to add host
+  uri:
+    url: "{{ zabbix_server_url }}"
+    method: POST
+    body:
+      jsonrpc: "2.0"
+      method: "action.create"
+      params:
+        name: "{{ zabbix_action_name }}"
+        status": 0
+        def_shortdata: "Auto registration: {HOST.HOST}"
+        def_longdata: "Host name: {HOST.HOST}\r\nHost IP: {HOST.IP}\r\nAgent port: {HOST.PORT}"
+        esc_period: 0
+        eventsource: 2
+        filter: 
+          evaltype: 0
+          conditions: "{{ zabbix_conditions_list }}" 
+        operations: "{{ zabbix_group_and_template_list }}"
+      auth: "{{ auth }}"
+      id: 3
+    status_code: 200
+    body_format: json
+    HEADER_Content-Type: "application/json"
+  register: result_action
+  changed_when: result_action.json.result is defined and result_action.json.result == True

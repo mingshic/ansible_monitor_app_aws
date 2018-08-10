@@ -1,0 +1,27 @@
+#[nginx]
+files: [
+        { src: "CentOS-Base.repo", dest: "/etc/yum.repos.d/CentOS-Base.repo", mode: "0644", owner: "root", group: "root", class: "nginx" },
+]
+
+nginx_rpm_dependent: [
+        { name: "epel-release", state: "present" },
+        { name: "gcc", state: "present" },
+        { name: "pcre", state: "present" },
+        { name: "pcre-devel", state: "present" },
+        { name: "openssl", state: "present" },
+        { name: "openssl-devel", state: "present" },
+]        
+
+nginx_rpm_install: [
+        { name: "nginx", state: "present" },
+        { name: "gperftools-libs", state: "present" },
+        { name: "libunwind", state: "present" },
+        { name: "nginx-all-modules", state: "present" },
+        { name: "nginx-filesystem", state: "present" },
+        { name: "nginx-mod-http-geoip", state: "present" },
+        { name: "nginx-mod-http-image-filter", state: "present" },
+        { name: "nginx-mod-http-perl", state: "present" },
+        { name: "nginx-mod-http-xslt-filter", state: "present" },
+        { name: "nginx-mod-mail", state: "present" },
+        { name: "nginx-mod-stream", state: "present" },
+]        

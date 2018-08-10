@@ -1,0 +1,30 @@
+
+- name: collectd file 
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+  with_items: "{{ files }}"
+  when: ansible_os_family == "RedHat"
+
+
+- name: install collectd rpm
+  yum:
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+  with_items: "{{ collectd_rpm_install }}"
+  when: ansible_os_family == "RedHat" 
+
+
+- name: template collectd.conf.j2 to collectd.conf
+  template: src=collectd.conf.j2 dest=/etc/collectd.conf mode=644 owner=root group=root
+  when: ansible_os_family == "RedHat"
+
+- name: mkdir /usr/share/collectd/ and touch /usr/share/collectd/types.db
+  shell: test -d /usr/share/collectd || mkdir /usr/share/collectd/ && test -f /usr/share/collectd/types.db || touch /usr/share/collectd/types.db 
+  when: ansible_os_family == "RedHat"
+  notify: start collectd
+
+  

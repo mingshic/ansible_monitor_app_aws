@@ -1,0 +1,26 @@
+
+- name: telegraf file 
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+  with_items: "{{ files }}"
+  when: ansible_os_family == "RedHat"
+
+
+- name: install telegraf rpm
+  yum:
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+  with_items: "{{ telegraf_rpm_install }}"
+  when: ansible_os_family == "RedHat" 
+
+
+- name: template telegraf.conf.j2 to telegraf.conf
+  template: src=telegraf.conf.j2 dest=/etc/telegraf/telegraf.conf mode=644 owner=root group=root
+  when: ansible_os_family == "RedHat"
+  notify: start telegraf
+
+  

@@ -1,0 +1,4 @@
+
+- name: run oracle sql to create user and password
+  shell: source ~/.bash_profile && echo "create tablespace {{ db_tablespace }} datafile '/{{ oracle_base_begin }}/app/oracle/oradata/{{ instanceName }}/{{ tablespace_file }}' size {{ tablespace_size }} autoextend on next {{ table_autoextend_size }};" | sqlplus / as sysdba &&  echo "create user {{ db_eos_user }} identified by {{ db_eos_password }} default tablespace {{ db_tablespace }};" | sqlplus / as sysdba && echo "grant connect,resource to {{ db_eos_user }};" | sqlplus / as sysdba 
+

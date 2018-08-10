@@ -1,0 +1,86 @@
+- name: zabbix file 
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+  with_items: "{{ files }}"
+  when: ansible_os_family == "RedHat"
+
+- name: Install dependent zabbix
+  yum:
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+  with_items: "{{ zabbix_rpm_dependent }}" 
+  when: ansible_os_family == "RedHat"
+   
+- name: create {{ project_zabbix }} directory tar rpm
+  file: dest=/tmp/{{ project_zabbix }} state=directory
+  when: (zabbix_version_way_to_judge1 == "ar.gz") or (zabbix_version_way_to_judge1 == "ar") or (zabbix_version_way_to_judge2 == "m")
+
+- name: template transfer zabbix dir tar rpm
+  copy: src={{ zabbix_version_way }} dest=/tmp/{{ project_zabbix }}/{{ zabbix_version_way }}
+  when: (zabbix_version_way_to_judge1 == "ar.gz") or (zabbix_version_way_to_judge1 == "ar") or (zabbix_version_way_to_judge2 == "m")
+
+- name: unarchive zabbix tar
+  unarchive: 
+    src: /tmp/{{ project_zabbix }}/{{ zabbix_version_way }}
+    dest: /tmp/{{ project_zabbix }} 
+    remote_src: True
+  when: (zabbix_version_way_to_judge1 == "ar.gz") or (zabbix_version_way_to_judge1 == "ar")
+
+- name: association mysql to install zabbix tar
+  shell: source /etc/profile && cd /tmp/{{ project_zabbix }}/{{ zabbix_version_way_to_dir }} && ./configure --sysconfdir={{ zabbix_conf }} --sbindir={{ zabbix_sbin }} --enable-agent --with-mysql --with-net-snmp --with-libcurl --with-libxml2 && make && make install 
+  when: (zabbix_version_way_to_judge1 == "ar.gz") or (zabbix_version_way_to_judge1 == "ar")
+
+- name: create zabbix group
+  group: name={{ zabbix_group }}
+  when: ansible_os_family == "RedHat"
+
+- name: create zabbix user to support zabbix server 
+  user: name={{ zabbix_user }} shell=/bin/bash groups={{ zabbix_group }} home=/home/{{ zabbix_user }} state=present
+  when: ansible_os_family == "RedHat"
+
+- name: configure file zabbix tar
+  template: src=zabbix_agentd.conf.j2 dest={{ zabbix_conf }}/zabbix_agentd.conf
+  when: (zabbix_version_way_to_judge1 == "ar.gz") or (zabbix_version_way_to_judge1 == "ar")
+
+- name: zabbixd tansfer remote host tar
+  template: src=zabbixd.j2 dest=/etc/init.d/zabbixd mode=755 owner=root group=root
+  when: (zabbix_version_way_to_judge1 == "ar.gz") or (zabbix_version_way_to_judge1 == "ar")
+
+- name: zabbixd chkconfig tar
+  shell: chkconfig --add zabbixd && chkconfig --level 2345 zabbixd on
+  when: (zabbix_version_way_to_judge1 == "ar.gz") or (zabbix_version_way_to_judge1 == "ar")
+  notify: start_zabbixd
+
+- name: zabbix 3.2.6 rpm repo url
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+  with_items: "{{ zabbix_url_repo }}"
+  when: (zabbix_version_way_to_judge1 != "ar.gz") and (zabbix_version_way_to_judge1 != "ar") and (zabbix_version_way_to_judge2 != "m")
+
+- name: Install zabbix and install http
+  yum:
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+  with_items: "{{ zabbix_rpm_install }}"
+  when: (zabbix_version_way_to_judge1 != "ar.gz") and (zabbix_version_way_to_judge1 != "ar") and (zabbix_version_way_to_judge2 != "m")
+
+- name: configure start file zabbix rpm
+  template: src=zabbix_agentd.conf.rpm.j2 dest=/etc/zabbix/zabbix_agentd.conf
+  when: (zabbix_version_way_to_judge1 != "ar.gz") and (zabbix_version_way_to_judge1 != "ar") or (zabbix_version_way_to_judge2 == "m")
+#  notify: start zabbix_agent
+
+- name: startup at boot
+  service: name=zabbix-agent enabled=yes
+  when: (zabbix_version_way_to_judge1 != "ar.gz") and (zabbix_version_way_to_judge1 != "ar") or (zabbix_version_way_to_judge2 == "m")
+
+- name: delete the host before adding this host
+  include: delete_host.yml
+
+- name: cofigure zabbix sudoers,script,parameter so on
+  include: configure-agent.yml

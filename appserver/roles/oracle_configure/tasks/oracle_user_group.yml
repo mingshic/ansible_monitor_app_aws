@@ -1,0 +1,24 @@
+
+- name: create group oracle
+  group:
+    name: "{{ item.name }}"
+    state: "present"
+  with_items:
+    - { name: 'oinstall' }
+    - { name: 'dba' }
+    - { name: 'asmadmin' }
+    - { name: 'asmdba' }
+
+- name: create user oracle
+  user:
+    name: oracle
+    createhome: yes
+    home: /home/oracle
+    groups: 
+      - dba
+      - asmdba
+      - oinstall
+    state: present
+ 
+  
+    

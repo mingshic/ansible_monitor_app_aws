@@ -1,0 +1,13 @@
+
+
+- name: package type to set variables
+  set_fact:
+    mysql_version_way_to_judge1: "{{ mysql_version_way | regex_replace('^mysql-?.*t', '') }}"
+    mysql_version_way_to_judge2: "{{ mysql_version_way | regex_replace('^mysql-?.*p', '') }}"
+    mysql_version_way_to_dir: "{{ mysql_version_way | regex_replace('.tar(.gz)?', '') }}"
+
+
+
+- include: "RedHat.yml"
+
+

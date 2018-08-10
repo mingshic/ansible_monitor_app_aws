@@ -1,0 +1,40 @@
+#[mysql]
+files: [
+        { src: "CentOS-Base.repo", dest: "/etc/yum.repos.d/CentOS-Base.repo", mode: "0644", owner: "root", group: "root", class: "mysql" },
+]
+
+mariadb_rpm_dependent: [
+        { name: "epel-release", state: "present" },
+        { name: "gcc", state: "present" },
+        { name: "perl(Data::Dumper)", state: "present" },
+        { name: "mysql-community-libs", state: "absent" },
+        { name: "mysql-community-common", state: "absent" },
+        { name: "mysql-community-client", state: "absent" },
+        { name: "mysql-community-server", state: "absent" },
+        { name: "mysql-community-release", state: "absent" },
+]        
+
+
+mariadb_rpm_install: [
+        { name: "mariadb", state: "present" },
+        { name: "mariadb-libs", state: "present" },
+        { name: "mariadb-server", state: "present" },    
+        { name: "MySQL-python", state: "present" },
+]
+
+mysql_rpm_dependent: [
+        { name: "http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm", state: "present" },
+        { name: "mariadb", state: "absent" },
+        { name: "mariadb-server", state: "absent" },
+        { name: "mariadb-libs", state: "absent" },
+]
+
+mysql_rpm_install: [
+        { name: "mysql-community-server", state: "present" },
+        { name: "MySQL-python", state: "present" },
+]
+
+
+
+
+

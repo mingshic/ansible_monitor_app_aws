@@ -1,0 +1,8 @@
+---
+
+- hosts: all
+  user: root
+  vars:
+    zabbix_group_and_template_list: [{"operationtype": 4, "opgroup": "{{ zabbix_group_ID_list }}"},{"operationtype": 6, "optemplate": "{{ zabbix_template_ID_list }}"}]
+  roles:
+    - zabbix-api

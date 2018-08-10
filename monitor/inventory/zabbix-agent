@@ -1,0 +1,4 @@
+[zabbix-agent]
+zabbix-agent1 ansible_ssh_user=root asnible_ssh_pass=password
+#zabbix-agent2 ansible_ssh_user=root asnible_ssh_pass=password
+#zabbix-agent3 ansible_ssh_user=root ansible_ssh_pass=password

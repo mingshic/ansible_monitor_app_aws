@@ -1,0 +1,28 @@
+zabbix_server_url: "http://172.18.201.51:88/zabbix/api_jsonrpc.php"
+zabbix_authori_user: "Admin"
+zabbix_authori_password: "zabbix"
+
+#[zabbix_action_name_and_so_on]
+zabbix_action_name: "vpn5"
+zabbix_condition_name_and_area_or_cluster_and_so_on: "vpn5"
+
+#[group_api_id] #!groupID begin 0 to increase on basis zabbix_group_list number
+zabbix_group_list: ["vpn5","vpn6"]
+zabbix_group_ID_list: [{"groupid": "{{ groupID[0].groupid }}"},{"groupid": "{{ groupID[1].groupid }}"}] 
+
+create_zabbix_group: [
+        { name: "vpn5", register: "result_group" },
+        { name: "vpn6", register: "result_group1" },
+]
+
+
+#[template_api_id] #!templateID begin 0 to increase on basis zabbix_template_list number
+zabbix_template_list: ["Template OS Linux","Template App FTP Service"]
+zabbix_template_ID_list: [{"templateid": "{{ templateID[0].templateid }}"},{"templateid": "{{ templateID[1].templateid }}"}]
+
+#[condition_value_action] #!this value mean cluster classifications or area classifications and so on, with conditiontype is 24 mean Hostmetadata and operator is 2 mean like and is 3 is not like.
+zabbix_conditions_list: [{"conditiontype": 24, "value": "vpn5", "operator": 2,},{"conditiontype": 24, "value": "vpn6", "operator": 2,}]
+
+
+
+

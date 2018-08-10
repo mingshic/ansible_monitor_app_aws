@@ -1,0 +1,91 @@
+#!/bin/bash
+#nx Startup script for the Nginx HTTP Server
+
+# chkconfig: - 85 15
+
+# processname: nginx
+
+# pidfile: /var/run/nginx.pid
+
+# config: /usr/local/nginx/conf/nginx.conf
+nginxd={{ nginx_sbin }}
+nginx_config={{ nginx_conf_file }}
+nginx_pid={{ nginx_pid }}
+# Start nginx daemons functions.
+start() {
+nginx_ps=`ps auxww | grep nginx | grep master` 
+if [[ -e $nginx_pid && $nginx_ps =~ "master" ]];then
+    echo "nginx already running...."
+    exit 1
+else
+    $nginxd
+    echo "nginx is started"
+fi
+}
+
+# Stop nginx daemons functions.
+
+stop() {
+nginx_ps=`ps auxww | grep nginx | grep master`
+nginx_pid_num=`ps auxww | grep nginx | grep master | awk '{print $2}'`
+if [[ -e $nginx_pid && $nginx_ps =~ "master" ]];then
+    $nginxd -s stop
+    kill $nginx_pid_num
+    sleep 1
+    rm -if {{ nginx_pid }}
+    echo "nginx is stoped" 
+else
+    echo "nginx is stop in the past"
+fi
+}
+
+# reload nginx service functions.
+
+reload() {
+    $nginxd -s $ reload
+}
+
+# See how we were called.
+
+case "$1" in
+
+start)
+
+        start
+
+        ;;
+
+stop)
+
+        stop
+
+        ;;
+
+reload)
+
+        reload
+
+        ;;
+
+restart)
+
+        stop
+
+        start
+
+        ;;
+
+status)
+
+        status
+
+        ;;
+
+*)
+
+        echo $"Usage: $prog {start|stop|restart|reload|status|help}"
+
+        exit 1
+
+esac
+

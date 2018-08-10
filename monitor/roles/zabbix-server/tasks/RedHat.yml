@@ -1,0 +1,109 @@
+
+- name: zabbix file 
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+  with_items: "{{ files }}"
+  when: ansible_os_family == "RedHat"
+
+- name: Install dependent zabbix
+  yum:
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+  with_items: "{{ zabbix_rpm_dependent }}" 
+  when: ansible_os_family == "RedHat"
+   
+- name: create {{ project_zabbix }} directory tar rpm
+  file: dest=/tmp/{{ project_zabbix }} state=directory
+  when: (zabbix_version_way_to_judge1 == "ar.gz") or (zabbix_version_way_to_judge1 == "ar") or (zabbix_version_way_to_judge2 == "m")
+
+- name: template transfer zabbix dir tar rpm
+  copy: src={{ zabbix_version_way }} dest=/tmp/{{ project_zabbix }}/{{ zabbix_version_way }}
+  when: (zabbix_version_way_to_judge1 == "ar.gz") or (zabbix_version_way_to_judge1 == "ar") or (zabbix_version_way_to_judge2 == "m")
+
+- name: unarchive zabbix tar
+  unarchive: 
+    src: /tmp/{{ project_zabbix }}/{{ zabbix_version_way }}
+    dest: /tmp/{{ project_zabbix }} 
+    remote_src: True
+  when: (zabbix_version_way_to_judge1 == "ar.gz") or (zabbix_version_way_to_judge1 == "ar")
+
+- name: association mysql to install zabbix tar
+  shell: source /etc/profile && cd /tmp/{{ project_zabbix }}/{{ zabbix_version_way_to_dir }} && ./configure --prefix={{ zabbix_prefix }} --sysconfdir={{ zabbix_conf }} --sbindir={{ zabbix_sbin }} --enable-server --enable-agent --with-mysql --with-net-snmp --with-libcurl --with-libxml2 && make && make install 
+  when: (zabbix_version_way_to_judge1 == "ar.gz") or (zabbix_version_way_to_judge1 == "ar")
+
+- name: source /etc/profile tar
+  shell: grep -q 'ZABBIX_HOME' /etc/profile || echo "ZABBIX_HOME={{ zabbix_prefix }}" >> /etc/profile && grep -q 'ZABBIX_HOME/bin' /etc/profile || echo "export PATH=\$ZABBIX_HOME/bin:\$PATH" >> /etc/profile && grep -q 'ZABBIX_HOME/lib' /etc/profile || echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$ZABBIX_HOME/lib" >> /etc/profile
+  when: (zabbix_version_way_to_judge1 == "ar.gz") or (zabbix_version_way_to_judge1 == "ar")
+
+- name: zabbix database to mysql and zabbix sql tar
+  shell: source /etc/profile && mysql -uroot -p{{ mysql_root_localhost_screte }} -e "create database {{ zabbix_DBName }} default charset utf8" && mysql -uroot -p{{ mysql_root_localhost_screte }} {{ zabbix_DBName }} < /tmp/{{ project_zabbix }}/{{ zabbix_version }}/database/mysql/schema.sql && mysql -uroot -p{{ mysql_root_localhost_screte }} {{ zabbix_DBName }} < /tmp/{{ project_zabbix }}/{{ zabbix_version }}/database/mysql/images.sql && mysql -uroot -p{{ mysql_root_localhost_screte }} {{ zabbix_DBName }} < /tmp/{{ project_zabbix }}/{{ zabbix_version }}/database/mysql/data.sql
+  when: (zabbix_version_way_to_judge1 == "ar.gz") or (zabbix_version_way_to_judge1 == "ar")
+
+- name: create zabbix group
+  group: name={{ zabbix_group }}
+  when: ansible_os_family == "RedHat"
+
+- name: create zabbix user to support zabbix server 
+  user: name={{ zabbix_user }} shell=/bin/bash groups={{ zabbix_group }} home=/home/{{ zabbix_user }} state=present
+  when: ansible_os_family == "RedHat"
+
+- name: configure file zabbix tar
+  template: src=zabbix_server.j2 dest={{ zabbix_conf }}/zabbix_server.conf
+  when: (zabbix_version_way_to_judge1 == "ar.gz") or (zabbix_version_way_to_judge1 == "ar")
+
+- name: zabbixd tansfer remote host tar
+  template: src=zabbixd.j2 dest=/etc/init.d/zabbixd mode=755 owner=root group=root
+  when: (zabbix_version_way_to_judge1 == "ar.gz") or (zabbix_version_way_to_judge1 == "ar")
+
+- name: zabbixd chkconfig tar
+  shell: chkconfig --add zabbixd && chkconfig --level 2345 zabbixd on
+  when: (zabbix_version_way_to_judge1 == "ar.gz") or (zabbix_version_way_to_judge1 == "ar")
+
+- name: association zabbix and nginx to web tar
+  shell: test -d {{ nginx_html }}/zabbix || mkdir {{ nginx_html }}/zabbix && test -d {{ zabbix_log }} || mkdir {{ zabbix_log }} && chown zabbix.zabbix {{ zabbix_log }} && test -d {{ nginx_html }}/zabbix/app || cp -rp /tmp/{{ project_zabbix }}/{{ zabbix_version }}/frontends/php/* {{ nginx_html }}/zabbix
+  when: (zabbix_version_way_to_judge1 == "ar.gz") or (zabbix_version_way_to_judge1 == "ar")
+
+- name: configure file zabbix and zabbix connection mysql to start zabbix end
+  template: src=zabbix.conf.php.j2 dest={{ nginx_html }}/zabbix/conf/zabbix.conf.php
+  when: (zabbix_version_way_to_judge1 == "ar.gz") or (zabbix_version_way_to_judge1 == "ar")
+  notify: start zabbixd
+
+- name: zabbix 3.2.6 rpm repo url
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+  with_items: "{{ zabbix_url_repo }}"
+  when: (zabbix_version_way_to_judge1 != "ar.gz") and (zabbix_version_way_to_judge1 != "ar") and (zabbix_version_way_to_judge2 != "m")
+
+- name: Install zabbix and install http
+  yum:
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+  with_items: "{{ zabbix_rpm_install }}"
+  when: (zabbix_version_way_to_judge1 != "ar.gz") and (zabbix_version_way_to_judge1 != "ar") and (zabbix_version_way_to_judge2 != "m")
+
+- name: configure file zabbix rpm
+  template: src=zabbix_server.rpm.j2 dest=/etc/zabbix/zabbix_server.conf
+  when: (zabbix_version_way_to_judge1 != "ar.gz") and (zabbix_version_way_to_judge1 != "ar") or (zabbix_version_way_to_judge2 == "m")
+
+- name: association zabbix and httpd to web rpm
+  shell: test -d /var/www/html/zabbix || mkdir /var/www/html/zabbix && test -d /var/www/html/zabbix/conf || cp -rp /usr/share/zabbix/* /var/www/html/zabbix  
+  when: (zabbix_version_way_to_judge1 != "ar.gz") and (zabbix_version_way_to_judge1 != "ar") or (zabbix_version_way_to_judge2 == "m")
+
+- name: configure file zabbix and zabbix connection mysql to start zabbix end rpm
+  template: src=zabbix.conf.php.rpm.j2 dest=/var/www/html/zabbix/conf/zabbix.conf.php
+  when: (zabbix_version_way_to_judge1 != "ar.gz") and (zabbix_version_way_to_judge1 != "ar") or (zabbix_version_way_to_judge2 == "m")
+  
+- name: start httpd
+  shell: service httpd start
+  when: (zabbix_version_way_to_judge1 != "ar.gz") and (zabbix_version_way_to_judge1 != "ar") or (zabbix_version_way_to_judge2 == "m")
+
+- name: zabbix sql ---> mysql to zabbix DB
+  shell: mysql -uroot -p{{ mysql_root_localhost_screte }} -e "create database {{ zabbix_DBName }} default charset utf8" && zabbix_info=`ls /usr/share/doc/ |grep zabbix-server` && zabbix_sql=`ls /usr/share/doc/$zabbix_info |grep sql.gz` && zcat /usr/share/doc/$zabbix_info/$zabbix_sql | mysql -uroot -p{{ mysql_root_localhost_screte }} {{ zabbix_DBName }}
+  when: (zabbix_version_way_to_judge1 != "ar.gz") and (zabbix_version_way_to_judge1 != "ar") or (zabbix_version_way_to_judge2 == "m")
+  notify: start zabbix_server

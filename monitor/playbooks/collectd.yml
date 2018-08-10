@@ -1,0 +1,10 @@
+---
+
+- hosts: all
+  user: root
+  vars:
+    collectd_hostname: "{{ ansible_all_ipv4_addresses[0] }}"
+    collectd_eth: "{{ ansible_eth0.device }}"
+    server_hostname: "192.168.67.2" 
+  roles:
+    - collectd 

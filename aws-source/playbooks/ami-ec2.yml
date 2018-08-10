@@ -1,0 +1,75 @@
+---
+
+- hosts: all
+  user: root
+  vars:
+    region: "us-east-1"
+    ec2_access_key: "AKIAJ4XNWAWSRIFOLUTA"
+    ec2_secret_key: "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"
+#get AMI
+#    distro: centos
+#    release: trusty
+#    virt: hvm
+    AMI_Name: 'centos7.3_Vmware_create'
+    owner_code: 969131741465 
+#need subnet id to execute instance ec2 by subnet_Name
+    subnet_Name: 'public1'
+#instance ec2 and ec2's configure
+#    instance_type: t2.micro
+#    pair_key_name: Chef
+#    security_group_name: [vpc-web]
+#    resource_tags_instance_ec2: { Name: 'oracle' } 
+#, type: 'oracle' }
+#    instance_number: 1
+#    count_tag: { type: oracle1 }
+####choise create ec2 way
+    way: "ec2"
+#self ami to create ec2
+    ami_ec2: 
+      ec2-1:
+        instance_type: t2.micro 
+        assign_public_ip: true
+        volumes: [{ device_name: /dev/sda1, volume_type: gp2, volume_size: 20 }] 
+        pair_key_name: Chef
+        security_group_name: [chef] 
+        resource_tags_instance_ec2: { Name: 'eos', type: 'eos1' }
+        instance_number: 1
+        count_tag: { type: eos1 } 
+        eip: True
+      ec2-2:
+        instance_type: t2.micro 
+        assign_public_ip: true
+        volumes: [{ device_name: /dev/sda1, volume_type: gp2, volume_size: 20 }] 
+        pair_key_name: Chef
+        security_group_name: [chef] 
+        resource_tags_instance_ec2: { Name: 'oracle', type: 'oracle1' }
+        instance_number: 1
+        count_tag: { type: oracle1 } 
+        eip: False
+#    vpc_subnet_id: subnet-15213c4f
+#provider ami to create ec2
+    ami_id: 'ami-cd0f5cb6'
+    ec2:
+      ec2-1:
+        instance_type: t2.micro
+        assign_public_ip: true
+        volumes: [{ device_name: /dev/sda1, volume_type: gp2, volume_size: 20 }]
+        pair_key_name: Chef
+        security_group_name: [chef]
+        resource_tags_instance_ec2: { Name: 'eos', type: 'eos1' }
+        instance_number: 1
+        count_tag: { type: eos1 }
+        eip: True
+      ec2-2:
+        instance_type: t2.micro
+        assign_public_ip: true
+        volumes: [{ device_name: /dev/sda1, volume_type: gp2, volume_size: 20 }]
+        pair_key_name: Chef
+        security_group_name: [chef]
+        resource_tags_instance_ec2: { Name: 'eos', type: 'oracle1' }
+        instance_number: 1
+        count_tag: { type: oracle1 }
+        eip: False
+  roles:
+    - ami_ec2
+#    - test

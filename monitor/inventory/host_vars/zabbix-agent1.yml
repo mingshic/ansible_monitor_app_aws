@@ -1,0 +1,37 @@
+#[zabbix-agent install]
+hostname_agent: "{{ ansible_hostname }}"
+project_zabbix: "zabbix"
+zabbix_server_host: "localhost"
+zabbix_server_port: "10051"
+zabbix_user: "zabbix"
+zabbix_group: "zabbix"
+zabbix_version_way: "" #"zabbix-3.2.1.tar"
+zabbix_version: "zabbix-3.2.1"
+zabbix_prefix: "/usr/local/zabbix"
+zabbix_conf: "/etc/zabbix"
+zabbix_sbin: "/etc/init.d"
+zabbix_log: "/var/zabbix"
+zabbix_log_file: "/var/zabbix/zabbix_server.log"
+zabbix_DBName: "zabbix"
+zabbix_DBUser: "zabbix"
+zabbix_DBPassword: "123456"
+zabbix_DBSocket: "/data/mysql/mysql.sock"
+zabbix_DBPort: "3306"
+zabbix_LogSlowQueries: "3000"
+zabbix_database: "zabbix"
+
+hostmetadata: "oracle"
+#[zabbix-conf]
+LogFileSize: 0
+debuglevel: 3
+EnableRemoteCommands: 0
+LogRemoteCommands: 0
+listenPort: 10050
+StartAgents: 3
+serverIP: "172.18.201.51"
+serverActive: "172.18.201.51"
+RefreshActiveChecks: 120
+BufferSend: 5
+BufferSize: 100
+MaxLinesPerSecond: 100
+UnsafeUserParameters: 1

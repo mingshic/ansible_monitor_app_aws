@@ -1,0 +1,13 @@
+
+
+- name: package type to set variables
+  set_fact:
+    nginx_version_way_to_judge1: "{{ nginx_version_way | regex_replace('^nginx-?.*t', '') }}"
+    nginx_version_way_to_judge2: "{{ nginx_version_way | regex_replace('^nginx-?.*p', '') }}"
+    nginx_version_way_to_dir: "{{ nginx_version_way | regex_replace('.tar(.gz)?', '') }}"
+
+
+
+- include: "RedHat.yml"
+
+
